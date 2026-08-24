@@ -127,9 +127,9 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
-    var serviceMirror = scope.ServiceProvider.GetRequiredService<IServiceMirror>();
+   /* var serviceMirror = scope.ServiceProvider.GetRequiredService<IServiceMirror>();
     foreach (var service in await db.Services.Where(service => service.IsActive).ToListAsync())
-        await serviceMirror.UpsertAsync(service, CancellationToken.None);
+        await serviceMirror.UpsertAsync(service, CancellationToken.None);*/
 }
 
 app.UseForwardedHeaders();
