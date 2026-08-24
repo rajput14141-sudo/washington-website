@@ -8,9 +8,7 @@ frontend/.env.*
 # .NET builds and local databases
 **/bin/
 **/obj/
-*.db
-*.db-shm
-*.db-wal
+
 
 # Local deployment secrets
 .env
