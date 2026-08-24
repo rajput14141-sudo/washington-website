@@ -15,9 +15,21 @@ interface Service {
 export default function Services() {
   const [services, setServices] = useState<Service[]>([])
 
-  useEffect(() => {
-    api.get('/services').then(res => setServices(res.data))
-  }, [])
+ useEffect(() => {
+  api.get('/services')
+    .then((res) => {
+      console.log('API Response:', res.data);
+
+      const data = Array.isArray(res.data)
+        ? res.data
+        : res.data?.$values || [];
+
+      setServices(data);
+    })
+    .catch((err) => {
+      console.error('Services API Error:', err);
+    });
+}, []);
 
   return (
     <div className="page-shell">
