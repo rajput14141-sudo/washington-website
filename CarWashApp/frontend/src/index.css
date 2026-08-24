@@ -1,0 +1,142 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,700;9..144,800;9..144,900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: "DM Sans", ui-sans-serif, sans-serif;
+  color: #10182f;
+  background: #f6f9f9;
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 0;
+  background: #f6f9f9;
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Fraunces", Georgia, serif;
+  letter-spacing: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes celebration-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.65) rotate(-10deg);
+  }
+
+  70% {
+    transform: scale(1.08) rotate(3deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) rotate(0);
+  }
+
+  15% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(180px) rotate(300deg);
+  }
+}
+
+.celebration-pop {
+  animation: celebration-pop 650ms cubic-bezier(0.2, 0.9, 0.25, 1.2) both;
+}
+
+.confetti-piece {
+  width: 10px;
+  height: 18px;
+  border-radius: 2px;
+  animation: confetti-fall 2.8s ease-in infinite;
+}
+
+.marquee-track {
+  animation: marquee-scroll 24s linear infinite;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+
+  .celebration-pop,
+  .confetti-piece {
+    animation: none;
+  }
+}
+
+@layer components {
+  .page-shell {
+    @apply mx-auto w-full max-w-7xl px-5 py-12 sm:px-8 lg:px-12 lg:py-16;
+  }
+
+  .section-title {
+    @apply text-3xl font-extrabold text-slate-950 sm:text-4xl;
+  }
+
+  .surface-card {
+    @apply rounded-[28px] border border-slate-200 bg-white shadow-sm;
+  }
+
+  .primary-button {
+    @apply inline-flex items-center justify-center rounded-full bg-teal-700 px-6 py-3 font-bold text-white shadow-lg shadow-teal-900/10 transition hover:-translate-y-0.5 hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-teal-200;
+  }
+
+  .secondary-button {
+    @apply inline-flex items-center justify-center rounded-full border border-teal-200 bg-white px-6 py-3 font-bold text-teal-800 transition hover:border-teal-700 hover:bg-teal-50 focus:outline-none focus:ring-4 focus:ring-teal-100;
+  }
+
+  .form-label {
+    @apply mb-2 block text-sm font-bold text-slate-800;
+  }
+
+  .form-control {
+    @apply w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-600 focus:ring-4 focus:ring-teal-100;
+  }
+}

@@ -1,0 +1,26 @@
+# Frontend dependencies and builds
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# .NET builds and local databases
+**/bin/
+**/obj/
+*.db
+*.db-shm
+*.db-wal
+
+# Local deployment secrets
+.env
+.env.*
+!.env.example
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.user
+*.suo
