@@ -86,7 +86,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+/*using (var scope = app.Services.CreateScope())
 {
     var authMirror = scope.ServiceProvider.GetRequiredService<IAuthMirror>();
     await authMirror.EnsureSchemaAsync(CancellationToken.None);
@@ -96,7 +96,7 @@ using (var scope = app.Services.CreateScope())
     await customerRegistration.EnsureSchemaAsync(CancellationToken.None);
     var bookingMirror = scope.ServiceProvider.GetRequiredService<IBookingMirror>();
     await bookingMirror.EnsureSchemaAsync(CancellationToken.None);
-}
+}*/
 
 // Seed roles + admin user + apply migrations
 using (var scope = app.Services.CreateScope())
