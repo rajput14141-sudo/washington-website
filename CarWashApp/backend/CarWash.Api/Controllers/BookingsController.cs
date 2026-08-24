@@ -2,12 +2,10 @@ using System.Security.Claims;
 using CarWash.Api.Data;
 using CarWash.Api.DTOs;
 using CarWash.Api.Models;
-using CarWash.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MySqlConnector;
 
 namespace CarWash.Api.Controllers;
 
@@ -18,22 +16,13 @@ public class BookingsController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ICustomerRegistrationMirror _registrationMirror;
-    private readonly IBookingMirror _bookingMirror;
-    private readonly ILogger<BookingsController> _logger;
 
     public BookingsController(
         AppDbContext db,
-        UserManager<ApplicationUser> userManager,
-        ICustomerRegistrationMirror registrationMirror,
-        IBookingMirror bookingMirror,
-        ILogger<BookingsController> logger)
+        UserManager<ApplicationUser> userManager)
     {
         _db = db;
         _userManager = userManager;
-        _registrationMirror = registrationMirror;
-        _bookingMirror = bookingMirror;
-        _logger = logger;
     }
 
     private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub")!;
@@ -42,12 +31,18 @@ public class BookingsController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> RegisterCustomer(CustomerRegistrationDto dto)
     {
-        await _registrationMirror.AddAsync(
-            dto.Name.Trim(),
-            dto.Phone.Trim(),
-            dto.Address.Trim(),
-            dto.Email.Trim().ToLowerInvariant(),
-            HttpContext.RequestAborted);
+        var normalizedEmail = dto.Email.Trim().ToLowerInvariant();
+        if (await _db.CustomerRegistrations.AnyAsync(customer => customer.Email == normalizedEmail))
+            return BadRequest("This email is already registered.");
+
+        _db.CustomerRegistrations.Add(new CustomerRegistration
+        {
+            Name = dto.Name.Trim(),
+            Phone = dto.Phone.Trim(),
+            Address = dto.Address.Trim(),
+            Email = normalizedEmail
+        });
+        await _db.SaveChangesAsync();
 
         return NoContent();
     }
@@ -83,31 +78,6 @@ public class BookingsController : ControllerBase
         _db.Bookings.Add(booking);
         await _db.SaveChangesAsync();
 
-        try
-        {
-            await _bookingMirror.AddAsync(
-                booking.Id,
-                customer?.FullName ?? string.Empty,
-                vehicle.Make,
-                service.Name,
-                service.PriceLabel,
-                dto.Address.Trim(),
-                dto.City.Trim(),
-                dto.Pincode.Trim(),
-                dto.ScheduledAt,
-                dto.PhoneNumber.Trim(),
-                HttpContext.RequestAborted);
-        }
-        catch (MySqlException exception)
-        {
-            _logger.LogError(exception, "Could not save booking to MySQL for user {UserId}", CurrentUserId);
-            _db.Bookings.Remove(booking);
-            await _db.SaveChangesAsync();
-            return Problem(
-                "Could not save booking data to MySQL. Check the washin_ton.customerser_booked table and connection.",
-                statusCode: StatusCodes.Status503ServiceUnavailable);
-        }
-
         return Ok(new CreateBookingResultDto(
             booking.Id,
             customer?.FullName ?? string.Empty,
@@ -130,58 +100,25 @@ public class BookingsController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<List<BookingDto>>> GetAll()
     {
-        try
-        {
-            var records = await _bookingMirror.GetAllAsync(HttpContext.RequestAborted);
-            return Ok(records.Select(record => new BookingDto(
-                record.Id,
-                record.CustomerName,
-                new VehicleDto(0, record.VehicleName, string.Empty, string.Empty, "Car"),
-                new ServiceDto(0, record.ServiceName, string.Empty, record.ServicePrice),
-                record.ScheduledAt,
-                record.Status,
-                null,
-                record.Address,
-                record.City,
-                record.Pincode,
-                record.PhoneNumber,
-                record.ExpireDate)).ToList());
-        }
-        catch (MySqlException exception)
-        {
-            _logger.LogError(exception, "Could not load admin bookings from MySQL");
-            return Problem(
-                "Could not read booking data from washin_ton.customerser_booked.",
-                statusCode: StatusCodes.Status503ServiceUnavailable);
-        }
+        var ids = await _db.Bookings
+            .OrderByDescending(booking => booking.Id)
+            .Select(booking => booking.Id)
+            .ToListAsync();
+        var result = new List<BookingDto>();
+        foreach (var id in ids) result.Add(await ToDto(id));
+        return Ok(result);
     }
 
     [HttpGet("summary")]
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<AdminBookingSummaryDto>> GetSummary()
     {
-        IReadOnlyList<MySqlBookingRecord> bookings;
-        try
-        {
-            bookings = await _bookingMirror.GetAllAsync(HttpContext.RequestAborted);
-        }
-        catch (MySqlException exception)
-        {
-            _logger.LogError(exception, "Could not load booking summary from MySQL");
-            return Problem(
-                "Could not read booking data from washin_ton.customerser_booked.",
-                statusCode: StatusCodes.Status503ServiceUnavailable);
-        }
-
-        var totalBookings = bookings.Count;
-        var pendingBookings = bookings.Count(booking => booking.Status == BookingStatus.Pending.ToString());
-        var activeStatuses = new[]
-        {
-            BookingStatus.Confirmed.ToString(),
-            BookingStatus.InProgress.ToString(),
-            BookingStatus.Completed.ToString()
-        };
-        var confirmedBookings = bookings.Count(booking => activeStatuses.Contains(booking.Status));
+        var totalBookings = await _db.Bookings.CountAsync();
+        var pendingBookings = await _db.Bookings.CountAsync(booking => booking.Status == BookingStatus.Pending);
+        var confirmedBookings = await _db.Bookings.CountAsync(booking =>
+            booking.Status == BookingStatus.Confirmed ||
+            booking.Status == BookingStatus.InProgress ||
+            booking.Status == BookingStatus.Completed);
 
         return Ok(new AdminBookingSummaryDto(
             totalBookings,
@@ -200,23 +137,8 @@ public class BookingsController : ControllerBase
         if (!Enum.TryParse<BookingStatus>(dto.Status, true, out var status))
             return BadRequest("Invalid status.");
 
-        var previousStatus = booking.Status;
         booking.Status = status;
         await _db.SaveChangesAsync();
-
-        try
-        {
-            await _bookingMirror.UpdateStatusAsync(id, status.ToString(), HttpContext.RequestAborted);
-        }
-        catch (MySqlException exception)
-        {
-            _logger.LogError(exception, "Could not update MySQL booking {BookingId} status", id);
-            booking.Status = previousStatus;
-            await _db.SaveChangesAsync();
-            return Problem(
-                "Could not update the booking status in washin_ton.customerser_booked.",
-                statusCode: StatusCodes.Status503ServiceUnavailable);
-        }
 
         return NoContent();
     }
@@ -225,25 +147,11 @@ public class BookingsController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id)
     {
-        try
-        {
-            if (!await _bookingMirror.DeleteAsync(id, HttpContext.RequestAborted))
-                return NotFound();
-        }
-        catch (MySqlException exception)
-        {
-            _logger.LogError(exception, "Could not delete MySQL booking {BookingId}", id);
-            return Problem(
-                "Could not delete the booking from washin_ton.customerser_booked.",
-                statusCode: StatusCodes.Status503ServiceUnavailable);
-        }
-
         var booking = await _db.Bookings.FindAsync(id);
-        if (booking is not null)
-        {
-            _db.Bookings.Remove(booking);
-            await _db.SaveChangesAsync();
-        }
+        if (booking is null) return NotFound();
+
+        _db.Bookings.Remove(booking);
+        await _db.SaveChangesAsync();
 
         return NoContent();
     }
