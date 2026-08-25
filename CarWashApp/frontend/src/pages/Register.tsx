@@ -45,8 +45,10 @@ export default function Register() {
           value={fullName} onChange={e => setFullName(e.target.value)} required />
         <input className="form-control" type="email" placeholder="Email address"
           value={email} onChange={e => setEmail(e.target.value)} required />
-        <input className="form-control" type="tel" placeholder="Phone number"
-          value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} required />
+        <input className="form-control" type="tel" placeholder="10-digit phone number"
+          value={phoneNumber} onChange={e => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+          inputMode="numeric" pattern="[0-9]{10}" minLength={10} maxLength={10}
+          autoComplete="tel" required />
         <textarea className="form-control min-h-24 resize-y" placeholder="Address"
           value={address} onChange={e => setAddress(e.target.value)} required />
         {error && <p className="text-red-600 text-sm">{error}</p>}

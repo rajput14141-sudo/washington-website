@@ -24,5 +24,9 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         );
 
         builder.Entity<SiteSetting>().HasData(new SiteSetting { Id = 1, Rating = 4.8m });
+
+        builder.Entity<ApplicationUser>()
+            .HasIndex(user => user.PhoneNumber)
+            .IsUnique();
     }
 }

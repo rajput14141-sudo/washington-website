@@ -24,8 +24,9 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponseDto>> Register(RegisterDto dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.PhoneNumber) || dto.PhoneNumber.Trim().Length < 8)
-            return BadRequest(new[] { "Enter a valid mobile number with at least 8 digits." });
+        var mobileNumber = dto.PhoneNumber?.Trim() ?? string.Empty;
+        if (mobileNumber.Length != 10 || mobileNumber.Any(character => !char.IsDigit(character)))
+            return BadRequest(new[] { "Mobile number must contain exactly 10 digits." });
 
         if (string.IsNullOrWhiteSpace(dto.Address))
             return BadRequest(new[] { "Address is required." });
@@ -34,7 +35,9 @@ public class AuthController : ControllerBase
         if (await _userManager.FindByEmailAsync(email) is not null)
             return BadRequest(new[] { "An account with this email already exists." });
 
-        var mobileNumber = dto.PhoneNumber.Trim();
+        if (_userManager.Users.Any(user => user.PhoneNumber == mobileNumber))
+            return BadRequest(new[] { "An account with this mobile number already exists." });
+
         var user = new ApplicationUser
         {
             UserName = email,
