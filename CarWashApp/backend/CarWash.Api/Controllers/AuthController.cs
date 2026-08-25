@@ -68,7 +68,8 @@ public class AuthController : ControllerBase
             UserName = email,
             Email = email,
             FullName = dto.FullName.Trim(),
-            PhoneNumber = dto.PhoneNumber.Trim()
+            PhoneNumber = dto.PhoneNumber.Trim(),
+            Address = dto.Address.Trim()
         };
 
         var result =
@@ -226,7 +227,8 @@ public class AuthController : ControllerBase
                 UserName = email,
                 Email = email,
                 FullName = dto.FullName.Trim(),
-                PhoneNumber = dto.PhoneNumber?.Trim()
+                PhoneNumber = dto.PhoneNumber?.Trim(),
+                Address = dto.Address?.Trim() ?? string.Empty
             };
 
             var createResult =
@@ -258,6 +260,7 @@ public class AuthController : ControllerBase
 
             user.FullName = dto.FullName.Trim();
             user.PhoneNumber = dto.PhoneNumber?.Trim();
+            user.Address = dto.Address?.Trim() ?? user.Address;
 
             var updateResult =
                 await _userManager.UpdateAsync(user);
