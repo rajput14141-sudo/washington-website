@@ -37,7 +37,8 @@ public record BookingDto(
     string? Notes,
     string Address,
     string City,
-    string Pincode
+    string Pincode,
+    DateTime ExpireDate
 );
 
 public record UpdateBookingStatusDto(string Status);

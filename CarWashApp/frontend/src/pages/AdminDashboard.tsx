@@ -18,6 +18,7 @@ interface Booking {
   address: string
   city: string
   pincode: string
+  expireDate: string
 }
 
 interface Customer {
@@ -151,6 +152,7 @@ export default function AdminDashboard() {
             <th className="p-3">Service</th>
             <th className="p-3">Address</th>
             <th className="p-3">Time</th>
+            <th className="p-3">Expire date</th>
             <th className="p-3">Status</th>
           </tr>
         </thead>
@@ -162,6 +164,7 @@ export default function AdminDashboard() {
               <td className="p-3">{b.service.name} — ₹{b.service.price}</td>
               <td className="p-3">{b.address}, {b.city} - {b.pincode}</td>
               <td className="p-3">{new Date(b.scheduledAt).toLocaleString()}</td>
+              <td className="p-3">{new Date(b.expireDate).toLocaleDateString()}</td>
               <td className="p-3">
                 <select
                   className="rounded-xl border border-slate-200 bg-white p-2 outline-none focus:border-teal-600"

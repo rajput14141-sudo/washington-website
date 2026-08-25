@@ -104,7 +104,8 @@ public class BookingsController : ControllerBase
             b.Notes,
             b.Address,
             b.City,
-            b.Pincode
+            b.Pincode,
+            b.ScheduledAt.AddDays(30)
         );
     }
 }
