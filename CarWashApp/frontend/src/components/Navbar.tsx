@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { CarFront, Sparkles } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import mrWashingtonLogo from '../assets/mr-washington-logo.jpeg'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
@@ -23,12 +23,13 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur">
       <nav className="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-2 px-5 sm:gap-4 sm:px-8 lg:px-12">
-        <Link to="/" onClick={() => setMobileOpen(false)} className="flex min-w-0 items-center gap-2.5 text-base font-black tracking-tight text-teal-900 sm:gap-3 sm:text-2xl">
-          <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-[#0b2d68] bg-white text-[#0b2d68] shadow-sm sm:h-14 sm:w-14" aria-hidden="true">
-            <CarFront className="h-6 w-6 sm:h-8 sm:w-8" strokeWidth={2.2} />
-            <Sparkles className="absolute right-0.5 top-0.5 h-3.5 w-3.5 bg-white text-[#0b2d68] sm:right-1 sm:top-1 sm:h-4 sm:w-4" strokeWidth={2.6} />
-          </span>
-          <span className="truncate">Mr.WashingTon</span>
+        <Link to="/" onClick={() => setMobileOpen(false)} className="flex min-w-0 items-center gap-2 text-base font-black tracking-tight text-teal-900 sm:gap-3 sm:text-2xl">
+          <img
+            src={mrWashingtonLogo}
+            alt="Mr. Washington Premium Car Care"
+            className="h-11 w-11 shrink-0 rounded-full object-cover shadow-sm sm:h-14 sm:w-14"
+          />
+          Mr.WashingTon
         </Link>
         <div className="flex shrink-0 items-center gap-1 sm:hidden">
           <Link
@@ -52,8 +53,7 @@ export default function Navbar() {
         </div>
         <div className="hidden items-center gap-6 text-sm font-bold text-slate-700 sm:flex">
           <Link className="transition hover:text-teal-700" to="/services">Services</Link>
-          {user && !user.roles.includes('Admin') && <Link className="transition hover:text-teal-700" to="/dashboard">My Bookings</Link>}
-          {!user && <Link className="transition hover:text-teal-700" to="/admin-access">Admin Login</Link>}
+          {!user && <Link className="transition hover:text-teal-700" to="/admin-access">Admin</Link>}
           {user?.roles.includes('Admin') && <Link className="hidden transition hover:text-teal-700 md:block" to="/admin">Admin</Link>}
         {user ? (
           <div ref={profileRef} className="relative">
@@ -73,23 +73,11 @@ export default function Navbar() {
                   <p className="mt-1 break-all text-xs font-medium text-slate-600">{user.email}</p>
                 </div>
                 <div className="mt-2 grid text-sm">
-                  {!user.roles.includes('Admin') && (
-                    <Link onClick={() => setProfileOpen(false)} to="/dashboard"
-                      className="rounded-xl px-4 py-3 hover:bg-slate-50">
-                      My Bookings
-                    </Link>
-                  )}
                   {user.roles.includes('Admin') && (
-                    <>
-                      <Link onClick={() => setProfileOpen(false)} to="/admin"
-                        className="rounded-xl px-4 py-3 hover:bg-slate-50">
-                        Admin Dashboard
-                      </Link>
-                      <Link onClick={() => setProfileOpen(false)} to="/admin?view=customers"
-                        className="rounded-xl px-4 py-3 hover:bg-slate-50">
-                        Customer Details
-                      </Link>
-                    </>
+                    <Link onClick={() => setProfileOpen(false)} to="/admin"
+                      className="rounded-xl px-4 py-3 hover:bg-slate-50">
+                      Admin Dashboard
+                    </Link>
                   )}
                   <button
                     type="button"
@@ -119,14 +107,8 @@ export default function Navbar() {
             <Link onClick={() => setMobileOpen(false)} to="/services" className="rounded-lg px-3 py-3 hover:bg-slate-50">Services</Link>
             {user ? (
               <>
-                {!user.roles.includes('Admin') && (
-                  <Link onClick={() => setMobileOpen(false)} to="/dashboard" className="rounded-lg px-3 py-3 hover:bg-slate-50">My Bookings</Link>
-                )}
                 {user.roles.includes('Admin') && (
-                  <>
-                    <Link onClick={() => setMobileOpen(false)} to="/admin" className="rounded-lg px-3 py-3 hover:bg-slate-50">Admin Dashboard</Link>
-                    <Link onClick={() => setMobileOpen(false)} to="/admin?view=customers" className="rounded-lg px-3 py-3 hover:bg-slate-50">Customer Details</Link>
-                  </>
+                  <Link onClick={() => setMobileOpen(false)} to="/admin" className="rounded-lg px-3 py-3 hover:bg-slate-50">Admin Dashboard</Link>
                 )}
                 <button
                   type="button"
@@ -138,7 +120,7 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link onClick={() => setMobileOpen(false)} to="/admin-access" className="rounded-lg px-3 py-3 hover:bg-slate-50">Admin Login</Link>
+                <Link onClick={() => setMobileOpen(false)} to="/admin-access" className="rounded-lg px-3 py-3 hover:bg-slate-50">Admin</Link>
                 <Link onClick={() => setMobileOpen(false)} to="/services" className="primary-button mt-2 w-full">Book a Wash</Link>
               </>
             )}

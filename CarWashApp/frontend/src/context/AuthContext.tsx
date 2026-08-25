@@ -9,9 +9,10 @@ interface AuthUser {
 
 interface AuthContextType {
   user: AuthUser | null
+  login: (email: string, password: string) => Promise<void>
   register: (fullName: string, email: string, phoneNumber: string, address: string) => Promise<void>
-  login: (email: string, phoneNumber: string) => Promise<void>
   adminLogin: (email: string, password: string) => Promise<void>
+  adminRegister: (fullName: string, email: string, password: string) => Promise<void>
   logout: () => void
 }
 
@@ -29,18 +30,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(u)
   }
 
-  async function register(fullName: string, email: string, phoneNumber: string, address: string) {
-    await api.post('/auth/register', { fullName, email, phoneNumber, address })
+  async function login(email: string, password: string) {
+    const { data } = await api.post('/auth/login', { email, password })
+    persist(data.token, { email: data.email, fullName: data.fullName, roles: data.roles })
   }
 
-  async function login(email: string, phoneNumber: string) {
-    const { data } = await api.post('/auth/login', { email, password: phoneNumber })
-    persist(data.token, { email: data.email, fullName: data.fullName, roles: data.roles })
+  async function register(fullName: string, email: string, phoneNumber: string, address: string) {
+    await api.post('/auth/register', { fullName, email, phoneNumber, address })
   }
 
   async function adminLogin(email: string, password: string) {
     const { data } = await api.post('/auth/admin/login', { email, password })
     persist(data.token, { email: data.email, fullName: data.fullName, roles: data.roles })
+  }
+
+  async function adminRegister(fullName: string, email: string, password: string) {
+    await api.post('/auth/admin/register', { fullName, email, password })
   }
 
   function logout() {
@@ -50,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, register, login, adminLogin, logout }}>
+    <AuthContext.Provider value={{ user, login, register, adminLogin, adminRegister, logout }}>
       {children}
     </AuthContext.Provider>
   )

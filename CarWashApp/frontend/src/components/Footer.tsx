@@ -9,7 +9,7 @@ export default function Footer() {
           <p className="mt-3 max-w-sm text-sm leading-6 text-slate-400">
             Reliable doorstep car washing and vehicle-care support across Greater Noida.
           </p>
-          <p className="mt-4 text-sm"><a className="hover:text-white" href="mailto:support@mrwashington.in">support@mrwashington.in</a></p>
+          <p className="mt-4 text-sm"><a className="hover:text-white" href="mailto:bymrwashington@myyahoo.com">bymrwashington@myyahoo.com</a></p>
           <p className="mt-2 text-sm"><a className="hover:text-white" href="tel:+919220475319">+91 92204 75319</a></p>
         </div>
         <div>

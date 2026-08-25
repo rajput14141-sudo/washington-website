@@ -1,4 +1,8 @@
-export function formatPrice(price: string) {
-  const numericPrice = Number(price.replace(/,/g, ''))
-  return price.trim() !== '' && Number.isFinite(numericPrice) ? `₹${price}` : price
+export function formatPrice(price: string | number) {
+  const value = String(price)
+  const numericPrice = Number(value.replace(/,/g, ''))
+
+  return value.trim() !== '' && Number.isFinite(numericPrice)
+    ? `₹${value}`
+    : value
 }
