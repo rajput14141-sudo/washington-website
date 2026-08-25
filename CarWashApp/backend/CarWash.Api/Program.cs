@@ -64,7 +64,16 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
     {
-        policy.WithOrigins(allowedOrigins)
+        policy.SetIsOriginAllowed(origin =>
+              {
+                  if (allowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
+                      return true;
+
+                  return Uri.TryCreate(origin, UriKind.Absolute, out var uri)
+                      && uri.Scheme == Uri.UriSchemeHttps
+                      && uri.Host.StartsWith("washington-website-", StringComparison.OrdinalIgnoreCase)
+                      && uri.Host.EndsWith("-anshu-carwash.vercel.app", StringComparison.OrdinalIgnoreCase);
+              })
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
