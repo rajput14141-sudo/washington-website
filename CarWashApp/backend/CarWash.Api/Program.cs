@@ -52,7 +52,13 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 
 // CORS for the React frontend
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-    ?? [builder.Configuration["Cors:AllowedOrigin"]!];
+    ?? [builder.Configuration["Cors:AllowedOrigin"] ?? string.Empty];
+allowedOrigins = allowedOrigins
+    .Where(origin => !string.IsNullOrWhiteSpace(origin))
+    .ToArray();
+
+if (allowedOrigins.Length == 0)
+    throw new InvalidOperationException("Cors:AllowedOrigins must contain at least one frontend origin.");
 
 builder.Services.AddCors(options =>
 {
