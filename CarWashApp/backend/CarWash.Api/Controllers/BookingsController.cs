@@ -19,26 +19,6 @@ public class BookingsController : ControllerBase
 
     private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub")!;
 
-    [HttpPost("register")]
-    [AllowAnonymous]
-    public async Task<IActionResult> RegisterCustomer(CustomerRegistrationDto dto)
-    {
-        var email = dto.Email.Trim().ToLowerInvariant();
-        if (await _db.CustomerRegistrations.AnyAsync(customer => customer.Email == email))
-            return BadRequest("This email is already registered.");
-
-        _db.CustomerRegistrations.Add(new CustomerRegistration
-        {
-            Name = dto.Name.Trim(),
-            Phone = dto.Phone.Trim(),
-            Address = dto.Address.Trim(),
-            Email = email
-        });
-        await _db.SaveChangesAsync();
-
-        return NoContent();
-    }
-
     // Customer: create a booking
     [HttpPost]
     public async Task<ActionResult<CreateBookingResultDto>> Create(CreateBookingDto dto)

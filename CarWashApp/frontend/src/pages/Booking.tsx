@@ -50,9 +50,13 @@ export default function Booking() {
       })
     } catch (requestError: unknown) {
       if (axios.isAxiosError(requestError)) {
-        const message = typeof requestError.response?.data === 'string'
-          ? requestError.response.data
-          : requestError.response?.data?.detail
+        const details = requestError.response?.data
+        const validationMessages = details?.errors
+          ? Object.values(details.errors).flat().join(' ')
+          : undefined
+        const message = typeof details === 'string'
+          ? details
+          : validationMessages || details?.detail || details?.title
         setError(message ?? 'Could not create booking. Check your inputs.')
       } else {
         setError('Could not create booking. Check your inputs.')

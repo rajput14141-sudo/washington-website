@@ -6,7 +6,6 @@ interface Service {
   name: string
   description: string
   price: number
-  durationMinutes: number
 }
 
 interface Booking {
@@ -21,6 +20,14 @@ interface Booking {
   pincode: string
 }
 
+interface Customer {
+  id: string
+  fullName: string
+  email: string
+  phoneNumber?: string
+  address: string
+}
+
 const STATUSES = ['Pending', 'Confirmed', 'InProgress', 'Completed', 'Cancelled']
 
 export default function AdminDashboard() {
@@ -29,9 +36,9 @@ export default function AdminDashboard() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
-  const [durationMinutes, setDurationMinutes] = useState('')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [customers, setCustomers] = useState<Customer[]>([])
 
   function loadBookings() {
     api.get('/bookings').then(res => setBookings(res.data))
@@ -41,9 +48,14 @@ export default function AdminDashboard() {
     api.get('/services').then(res => setServices(res.data))
   }
 
+  function loadCustomers() {
+    api.get('/customers').then(res => setCustomers(res.data))
+  }
+
   useEffect(() => {
     loadBookings()
     loadServices()
+    loadCustomers()
   }, [])
 
   async function updateStatus(id: number, status: string) {
@@ -61,13 +73,11 @@ export default function AdminDashboard() {
         id: 0,
         name,
         description,
-        price: Number(price),
-        durationMinutes: Number(durationMinutes)
+        price: Number(price)
       })
       setName('')
       setDescription('')
       setPrice('')
-      setDurationMinutes('')
       setMessage('Service published. It is now visible on the Services page.')
       loadServices()
     } catch {
@@ -89,7 +99,7 @@ export default function AdminDashboard() {
         <form onSubmit={publishService} className="surface-card p-6 sm:p-8">
           <h2 className="text-2xl font-extrabold text-slate-950">Publish a service</h2>
           <p className="mt-2 text-slate-600">New services appear immediately on the public Services page.</p>
-          <div className="mt-6 grid gap-5 sm:grid-cols-2">
+          <div className="mt-6 grid gap-5">
             <label className="sm:col-span-2">
               <span className="form-label">Service name</span>
               <input className="form-control" value={name} onChange={event => setName(event.target.value)} required />
@@ -103,11 +113,6 @@ export default function AdminDashboard() {
               <span className="form-label">Price (₹)</span>
               <input className="form-control" type="number" min="1" step="0.01" value={price}
                 onChange={event => setPrice(event.target.value)} required />
-            </label>
-            <label>
-              <span className="form-label">Duration (minutes)</span>
-              <input className="form-control" type="number" min="1" value={durationMinutes}
-                onChange={event => setDurationMinutes(event.target.value)} required />
             </label>
           </div>
           {message && <p className="mt-5 rounded-lg bg-teal-50 px-4 py-3 text-sm font-semibold text-teal-800">{message}</p>}
@@ -123,7 +128,7 @@ export default function AdminDashboard() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <h3 className="font-extrabold text-slate-950">{service.name}</h3>
-                    <p className="mt-1 text-sm text-slate-600">₹{service.price} · {service.durationMinutes} minutes</p>
+                    <p className="mt-1 text-sm text-slate-600">₹{service.price}</p>
                   </div>
                   <button type="button" onClick={() => deactivateService(service.id)}
                     className="shrink-0 text-sm font-bold text-red-600 hover:text-red-800">
@@ -170,6 +175,30 @@ export default function AdminDashboard() {
           ))}
         </tbody>
       </table>
+      </div>
+
+      <h2 className="mb-5 mt-10 text-2xl font-extrabold text-slate-950">Customer details</h2>
+      <div className="surface-card overflow-x-auto">
+        <table className="w-full min-w-[760px]">
+          <thead className="bg-teal-50 text-left text-sm text-teal-950">
+            <tr>
+              <th className="p-3">Name</th>
+              <th className="p-3">Email</th>
+              <th className="p-3">Phone number</th>
+              <th className="p-3">Address</th>
+            </tr>
+          </thead>
+          <tbody>
+            {customers.map(customer => (
+              <tr key={customer.id} className="border-t border-slate-100 text-sm">
+                <td className="p-3 font-semibold">{customer.fullName}</td>
+                <td className="p-3">{customer.email}</td>
+                <td className="p-3">{customer.phoneNumber || 'Not provided'}</td>
+                <td className="p-3">{customer.address || 'Not provided'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   )
