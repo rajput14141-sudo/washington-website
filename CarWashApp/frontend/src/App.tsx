@@ -1,16 +1,20 @@
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Home from './pages/Home'
 import Services from './pages/Services'
 import AdminDashboard from './pages/AdminDashboard'
-import PublicBooking from './pages/PublicBooking'
+import Booking from './pages/Booking'
+import BookingSuccess from './pages/BookingSuccess'
+import Dashboard from './pages/Dashboard'
+import Login from './pages/Login'
+import Register from './pages/Register'
 import AdminAuth from './pages/AdminAuth'
 import { useAuth } from './context/AuthContext'
-import { Navigate } from 'react-router-dom'
 
 function RequireAuth({ children, adminOnly = false }: { children: JSX.Element, adminOnly?: boolean }) {
   const { user } = useAuth()
-  if (!user) return <Navigate to="/login" replace />
+  const location = useLocation()
+  if (!user) return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />
   if (adminOnly && !user.roles.includes('Admin')) return <Navigate to="/" replace />
   return children
 }
@@ -22,8 +26,12 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/services" element={<Services />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/admin-access" element={<AdminAuth />} />
-        <Route path="/book/:serviceId" element={<PublicBooking />} />
+        <Route path="/book/:serviceId" element={<RequireAuth><Booking /></RequireAuth>} />
+        <Route path="/booking-success" element={<RequireAuth><BookingSuccess /></RequireAuth>} />
+        <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
         <Route path="/admin" element={<RequireAuth adminOnly><AdminDashboard /></RequireAuth>} />
       </Routes>
     </div>
