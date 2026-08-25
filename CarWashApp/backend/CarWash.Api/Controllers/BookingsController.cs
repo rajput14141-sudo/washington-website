@@ -31,8 +31,8 @@ public class BookingsController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> RegisterCustomer(CustomerRegistrationDto dto)
     {
-        var normalizedEmail = dto.Email.Trim().ToLowerInvariant();
-        if (await _db.CustomerRegistrations.AnyAsync(customer => customer.Email == normalizedEmail))
+        var email = dto.Email.Trim().ToLowerInvariant();
+        if (await _db.CustomerRegistrations.AnyAsync(customer => customer.Email == email))
             return BadRequest("This email is already registered.");
 
         _db.CustomerRegistrations.Add(new CustomerRegistration
@@ -40,7 +40,7 @@ public class BookingsController : ControllerBase
             Name = dto.Name.Trim(),
             Phone = dto.Phone.Trim(),
             Address = dto.Address.Trim(),
-            Email = normalizedEmail
+            Email = email
         });
         await _db.SaveChangesAsync();
 
@@ -49,22 +49,45 @@ public class BookingsController : ControllerBase
 
     // Customer: create a booking
     [HttpPost]
-    public async Task<ActionResult<CreateBookingResultDto>> Create(CreateBookingDto dto)
+    [AllowAnonymous]
+    public async Task<ActionResult<PublicBookingResultDto>> Create(CreateBookingDto dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.PhoneNumber))
-            return BadRequest("Phone number is required.");
-
         var service = await _db.Services.FindAsync(dto.ServiceId);
         if (service is null || !service.IsActive) return BadRequest("Service not found.");
 
-        var vehicle = await _db.Vehicles.FirstOrDefaultAsync(candidate =>
-            candidate.Id == dto.VehicleId && candidate.UserId == CurrentUserId);
-        if (vehicle is null) return BadRequest("Select a valid vehicle.");
+        var email = dto.Email.Trim().ToLowerInvariant();
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user is not null && await _userManager.IsInRoleAsync(user, "Admin"))
+            return BadRequest("Use a different email for customer registration.");
 
-        var customer = await _userManager.FindByIdAsync(CurrentUserId);
+        if (user is null)
+        {
+            user = new ApplicationUser { UserName = email, Email = email, FullName = dto.CustomerName.Trim() };
+            var createResult = await _userManager.CreateAsync(user);
+            if (!createResult.Succeeded)
+                return BadRequest(createResult.Errors.Select(error => error.Description));
+            await _userManager.AddToRoleAsync(user, "Customer");
+        }
+        else
+        {
+            user.FullName = dto.CustomerName.Trim();
+            await _userManager.UpdateAsync(user);
+        }
+
+        var vehicle = new Vehicle
+        {
+            UserId = user.Id,
+            Make = dto.VehicleMake.Trim(),
+            Model = dto.VehicleModel.Trim(),
+            LicensePlate = dto.LicensePlate.Trim(),
+            Type = dto.VehicleType.Trim()
+        };
+        _db.Vehicles.Add(vehicle);
+        await _db.SaveChangesAsync();
+
         var booking = new Booking
         {
-            UserId = CurrentUserId,
+            UserId = user.Id,
             VehicleId = vehicle.Id,
             ServiceId = dto.ServiceId,
             ScheduledAt = dto.ScheduledAt,
@@ -72,17 +95,24 @@ public class BookingsController : ControllerBase
             Address = dto.Address.Trim(),
             City = dto.City.Trim(),
             Pincode = dto.Pincode.Trim(),
-            PhoneNumber = dto.PhoneNumber.Trim(),
             Status = BookingStatus.Pending
         };
         _db.Bookings.Add(booking);
         await _db.SaveChangesAsync();
 
-        return Ok(new CreateBookingResultDto(
-            booking.Id,
-            customer?.FullName ?? string.Empty,
-            dto.PhoneNumber.Trim(),
-            service.Name));
+        if (!await _db.CustomerRegistrations.AnyAsync(customer => customer.Email == email))
+        {
+            _db.CustomerRegistrations.Add(new CustomerRegistration
+            {
+                Name = user.FullName,
+                Phone = dto.Phone.Trim(),
+                Address = $"{booking.Address}, {booking.City} - {booking.Pincode}",
+                Email = email
+            });
+            await _db.SaveChangesAsync();
+        }
+
+        return Ok(new PublicBookingResultDto(await ToDto(booking.Id), user.Id));
     }
 
     // Customer: view own bookings
@@ -100,30 +130,10 @@ public class BookingsController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<List<BookingDto>>> GetAll()
     {
-        var ids = await _db.Bookings
-            .OrderByDescending(booking => booking.Id)
-            .Select(booking => booking.Id)
-            .ToListAsync();
+        var ids = await _db.Bookings.Select(b => b.Id).ToListAsync();
         var result = new List<BookingDto>();
         foreach (var id in ids) result.Add(await ToDto(id));
         return Ok(result);
-    }
-
-    [HttpGet("summary")]
-    [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<AdminBookingSummaryDto>> GetSummary()
-    {
-        var totalBookings = await _db.Bookings.CountAsync();
-        var pendingBookings = await _db.Bookings.CountAsync(booking => booking.Status == BookingStatus.Pending);
-        var confirmedBookings = await _db.Bookings.CountAsync(booking =>
-            booking.Status == BookingStatus.Confirmed ||
-            booking.Status == BookingStatus.InProgress ||
-            booking.Status == BookingStatus.Completed);
-
-        return Ok(new AdminBookingSummaryDto(
-            totalBookings,
-            pendingBookings,
-            confirmedBookings));
     }
 
     // Admin: update booking status
@@ -139,20 +149,6 @@ public class BookingsController : ControllerBase
 
         booking.Status = status;
         await _db.SaveChangesAsync();
-
-        return NoContent();
-    }
-
-    [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var booking = await _db.Bookings.FindAsync(id);
-        if (booking is null) return NotFound();
-
-        _db.Bookings.Remove(booking);
-        await _db.SaveChangesAsync();
-
         return NoContent();
     }
 
@@ -168,15 +164,13 @@ public class BookingsController : ControllerBase
             b.Id,
             b.User!.FullName,
             new VehicleDto(b.Vehicle!.Id, b.Vehicle.Make, b.Vehicle.Model, b.Vehicle.LicensePlate, b.Vehicle.Type),
-            new ServiceDto(b.Service!.Id, b.Service.Name, b.Service.Description, b.Service.PriceLabel),
+            new ServiceDto(b.Service!.Id, b.Service.Name, b.Service.Description, b.Service.Price),
             b.ScheduledAt,
             b.Status.ToString(),
             b.Notes,
             b.Address,
             b.City,
-            b.Pincode,
-            b.PhoneNumber,
-            b.ScheduledAt.AddDays(30)
+            b.Pincode
         );
     }
 }
