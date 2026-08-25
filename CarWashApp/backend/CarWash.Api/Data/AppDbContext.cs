@@ -12,7 +12,6 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Service> Services => Set<Service>();
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<SiteSetting> SiteSettings => Set<SiteSetting>();
-    public DbSet<CustomerRegistration> CustomerRegistrations => Set<CustomerRegistration>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -25,9 +24,5 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         );
 
         builder.Entity<SiteSetting>().HasData(new SiteSetting { Id = 1, Rating = 4.8m });
-
-        builder.Entity<CustomerRegistration>()
-            .HasIndex(customer => customer.Email)
-            .IsUnique();
     }
 }

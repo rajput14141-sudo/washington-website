@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Phone } from 'lucide-react'
 import { api } from '../api/client'
 import { formatPrice } from '../utils/price'
 
@@ -8,8 +7,7 @@ interface Service {
   id: number
   name: string
   description: string
-  price: string
-  phoneNumber?: string
+  price: number
 }
 
 export default function Services() {
@@ -51,20 +49,12 @@ export default function Services() {
             <p className="mt-2 flex-1 text-sm leading-6 text-slate-600">{s.description}</p>
             <div className="mt-5 flex items-center justify-between gap-4 border-t border-slate-100 pt-4">
               <p className="min-w-0 truncate text-xl font-black text-teal-800">{formatPrice(s.price)}</p>
-              {s.phoneNumber ? (
-                <a href={`tel:${s.phoneNumber.replace(/[^+\d]/g, '')}`}
-                  className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-teal-700 px-5 text-sm font-bold text-white shadow-md shadow-teal-900/10 transition hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-teal-200">
-                  <Phone size={17} aria-hidden="true" />
-                  Call now
-                </a>
-              ) : (
-                <Link
-                  to={`/book/${s.id}`}
-                  className="inline-flex h-10 shrink-0 items-center justify-center rounded-full bg-teal-700 px-5 text-sm font-bold text-white shadow-md shadow-teal-900/10 transition hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-teal-200"
-                >
-                  Book now
-                </Link>
-              )}
+              <Link
+                to={`/book/${s.id}`}
+                className="inline-flex h-10 shrink-0 items-center justify-center rounded-full bg-teal-700 px-5 text-sm font-bold text-white shadow-md shadow-teal-900/10 transition hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-teal-200"
+              >
+                Book now
+              </Link>
             </div>
           </article>
         ))}
