@@ -40,28 +40,35 @@ export default function AdminDashboard() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [customers, setCustomers] = useState<Customer[]>([])
+  const [editingService, setEditingService] = useState<Service | null>(null)
 
-  function loadBookings() {
-    api.get('/bookings').then(res => setBookings(res.data))
+  async function loadBookings() {
+    const response = await api.get('/bookings')
+    setBookings(response.data)
   }
 
-  function loadServices() {
-    api.get('/services').then(res => setServices(res.data))
+  async function loadServices() {
+    const response = await api.get('/services')
+    setServices(response.data)
   }
 
-  function loadCustomers() {
-    api.get('/customers').then(res => setCustomers(res.data))
+  async function loadCustomers() {
+    const response = await api.get('/customers')
+    setCustomers(response.data)
   }
 
   useEffect(() => {
-    loadBookings()
-    loadServices()
-    loadCustomers()
+    Promise.all([loadBookings(), loadServices(), loadCustomers()])
+      .catch(() => setError('Your admin session has expired. Please log in again.'))
   }, [])
 
   async function updateStatus(id: number, status: string) {
-    await api.put(`/bookings/${id}/status`, { status })
-    loadBookings()
+    try {
+      await api.put(`/bookings/${id}/status`, { status })
+      await loadBookings()
+    } catch {
+      setError('Could not update the booking status. Please log in again if your session expired.')
+    }
   }
 
   async function publishService(event: FormEvent) {
@@ -70,25 +77,54 @@ export default function AdminDashboard() {
     setMessage('')
 
     try {
-      await api.post('/services', {
-        id: 0,
+      const serviceData = {
+        id: editingService?.id ?? 0,
         name,
         description,
         price: Number(price)
-      })
+      }
+
+      if (editingService)
+        await api.put(`/services/${editingService.id}`, serviceData)
+      else
+        await api.post('/services', serviceData)
+
       setName('')
       setDescription('')
       setPrice('')
-      setMessage('Service published. It is now visible on the Services page.')
-      loadServices()
+      setMessage(editingService
+        ? 'Service updated successfully.'
+        : 'Service published. It is now visible on the Services page.')
+      setEditingService(null)
+      await loadServices()
     } catch {
-      setError('Could not publish the service. Check all values and try again.')
+      setError(`Could not ${editingService ? 'update' : 'publish'} the service. Check all values and try again.`)
     }
   }
 
+  function startEditing(service: Service) {
+    setEditingService(service)
+    setName(service.name)
+    setDescription(service.description)
+    setPrice(String(service.price))
+    setMessage('')
+    setError('')
+  }
+
+  function cancelEditing() {
+    setEditingService(null)
+    setName('')
+    setDescription('')
+    setPrice('')
+  }
+
   async function deactivateService(id: number) {
-    await api.delete(`/services/${id}`)
-    loadServices()
+    try {
+      await api.delete(`/services/${id}`)
+      await loadServices()
+    } catch {
+      setError('Could not remove the service. Please log in again if your session expired.')
+    }
   }
 
   return (
@@ -98,8 +134,10 @@ export default function AdminDashboard() {
 
       <section className="mb-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,.8fr)]">
         <form onSubmit={publishService} className="surface-card p-6 sm:p-8">
-          <h2 className="text-2xl font-extrabold text-slate-950">Publish a service</h2>
-          <p className="mt-2 text-slate-600">New services appear immediately on the public Services page.</p>
+          <h2 className="text-2xl font-extrabold text-slate-950">{editingService ? 'Edit service' : 'Publish a service'}</h2>
+          <p className="mt-2 text-slate-600">{editingService
+            ? 'Update the selected service details.'
+            : 'New services appear immediately on the public Services page.'}</p>
           <div className="mt-6 grid gap-5">
             <label className="sm:col-span-2">
               <span className="form-label">Service name</span>
@@ -118,7 +156,12 @@ export default function AdminDashboard() {
           </div>
           {message && <p className="mt-5 rounded-lg bg-teal-50 px-4 py-3 text-sm font-semibold text-teal-800">{message}</p>}
           {error && <p className="mt-5 text-sm font-medium text-red-600">{error}</p>}
-          <button className="primary-button mt-6 w-full sm:w-auto">Publish Service</button>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button className="primary-button w-full sm:w-auto">{editingService ? 'Save Changes' : 'Publish Service'}</button>
+            {editingService && (
+              <button type="button" className="secondary-button w-full sm:w-auto" onClick={cancelEditing}>Cancel</button>
+            )}
+          </div>
         </form>
 
         <section className="surface-card p-6 sm:p-8">
@@ -131,10 +174,16 @@ export default function AdminDashboard() {
                     <h3 className="font-extrabold text-slate-950">{service.name}</h3>
                     <p className="mt-1 text-sm text-slate-600">₹{service.price}</p>
                   </div>
-                  <button type="button" onClick={() => deactivateService(service.id)}
-                    className="shrink-0 text-sm font-bold text-red-600 hover:text-red-800">
-                    Remove
-                  </button>
+                  <div className="flex shrink-0 gap-3 text-sm font-bold">
+                    <button type="button" onClick={() => startEditing(service)}
+                      className="text-teal-700 hover:text-teal-900">
+                      Edit
+                    </button>
+                    <button type="button" onClick={() => deactivateService(service.id)}
+                      className="text-red-600 hover:text-red-800">
+                      Remove
+                    </button>
+                  </div>
                 </div>
               </article>
             ))}

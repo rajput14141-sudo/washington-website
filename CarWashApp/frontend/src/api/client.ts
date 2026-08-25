@@ -11,3 +11,20 @@ api.interceptors.request.use((config) => {
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
+
+api.interceptors.response.use(
+  response => response,
+  error => {
+    const isUnauthorized = error.response?.status === 401
+    const isAuthRequest = String(error.config?.url ?? '').includes('/auth/')
+
+    if (isUnauthorized && !isAuthRequest) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      const loginPath = window.location.pathname.startsWith('/admin') ? '/admin-access' : '/login'
+      window.location.assign(loginPath)
+    }
+
+    return Promise.reject(error)
+  }
+)
