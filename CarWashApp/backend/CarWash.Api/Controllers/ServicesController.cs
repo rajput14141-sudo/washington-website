@@ -1,6 +1,7 @@
 using CarWash.Api.Data;
 using CarWash.Api.DTOs;
 using CarWash.Api.Models;
+using CarWash.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,10 +14,12 @@ namespace CarWash.Api.Controllers;
 public class ServicesController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly IServiceMirror _serviceMirror;
 
-    public ServicesController(AppDbContext db)
+    public ServicesController(AppDbContext db, IServiceMirror serviceMirror)
     {
         _db = db;
+        _serviceMirror = serviceMirror;
     }
 
     [HttpGet]
@@ -45,6 +48,16 @@ public class ServicesController : ControllerBase
         };
         _db.Services.Add(service);
         await _db.SaveChangesAsync();
+        try
+        {
+            await _serviceMirror.UpsertAsync(service, HttpContext.RequestAborted);
+        }
+        catch
+        {
+            _db.Services.Remove(service);
+            await _db.SaveChangesAsync(CancellationToken.None);
+            throw;
+        }
         return Ok(new ServiceDto(service.Id, service.Name, service.Description, service.PriceLabel, service.PhoneNumber));
     }
 
@@ -64,6 +77,7 @@ public class ServicesController : ControllerBase
         service.Price = ParsePrice(priceLabel);
         service.PriceLabel = priceLabel;
         await _db.SaveChangesAsync();
+        await _serviceMirror.UpsertAsync(service, HttpContext.RequestAborted);
         return NoContent();
     }
 
@@ -83,6 +97,7 @@ public class ServicesController : ControllerBase
         if (service is null) return NotFound();
         service.IsActive = false; // soft delete
         await _db.SaveChangesAsync();
+        await _serviceMirror.RemoveAsync(service.Id, HttpContext.RequestAborted);
         return NoContent();
     }
 }

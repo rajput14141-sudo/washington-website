@@ -12,15 +12,13 @@ export default function Register() {
   const [email, setEmail] = useState('')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [address, setAddress] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError('')
     try {
-      await register(fullName, email, phoneNumber, address, password, confirmPassword)
+      await register(fullName, email, phoneNumber, address)
       navigate('/login', {
         replace: true,
         state: { registered: true, email, from: registration?.from }
@@ -51,12 +49,6 @@ export default function Register() {
           value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} required />
         <textarea className="form-control min-h-24 resize-y" placeholder="Address"
           value={address} onChange={e => setAddress(e.target.value)} required />
-        <input className="form-control" type="password" placeholder="Password"
-          value={password} onChange={e => setPassword(e.target.value)} minLength={8}
-          autoComplete="new-password" required />
-        <input className="form-control" type="password" placeholder="Confirm password"
-          value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} minLength={8}
-          autoComplete="new-password" required />
         {error && <p className="text-red-600 text-sm">{error}</p>}
         <button className="primary-button w-full">Register Customer</button>
       </form>

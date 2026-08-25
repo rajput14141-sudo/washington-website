@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { api } from '../api/client'
 
 interface Booking {
@@ -19,7 +20,9 @@ function getBookingExpiry(scheduledAt: string) {
 }
 
 export default function Dashboard() {
+  const location = useLocation()
   const [bookings, setBookings] = useState<Booking[]>([])
+  const bookingConfirmed = Boolean(location.state?.bookingConfirmed)
 
   useEffect(() => {
     api.get('/bookings/my').then(res => setBookings(res.data))
@@ -29,6 +32,11 @@ export default function Dashboard() {
     <div className="page-shell max-w-5xl">
       <p className="mb-3 text-sm font-black uppercase tracking-[0.2em] text-teal-700">Your account</p>
       <h2 className="section-title mb-8">My bookings</h2>
+      {bookingConfirmed && (
+        <p className="mb-6 rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 font-semibold text-teal-900">
+          Booking confirmed. Send the prepared WhatsApp message to notify us.
+        </p>
+      )}
       {bookings.length === 0 && <div className="surface-card p-8 text-slate-500">No bookings yet.</div>}
       <div className="space-y-4">
         {bookings.map(b => (

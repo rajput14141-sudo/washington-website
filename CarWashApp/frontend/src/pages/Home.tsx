@@ -68,7 +68,7 @@ export default function Home() {
             <div className="mt-10 flex flex-wrap gap-x-8 gap-y-3 text-sm font-bold text-slate-700">
               <span>✓ Verified service</span>
               <span>✓ Upfront pricing</span>
-              <span>✓ Instant booking</span>
+              <span>✓ WhatsApp confirmation</span>
             </div>
           </div>
 
@@ -106,7 +106,7 @@ export default function Home() {
           {[
             ['01', 'Choose your wash', 'Compare transparent packages and select the care your car needs.'],
             ['02', 'Pick your time', 'Add your vehicle and address, then choose a convenient appointment.'],
-            ['03', 'Request received', 'Review your saved booking while our team confirms the appointment.']
+            ['03', 'Confirm on WhatsApp', 'Send your booking details directly to our team for quick confirmation.']
           ].map(([number, title, text]) => (
             <article key={number} className="surface-card p-7">
               <span className="text-sm font-black text-teal-700">{number}</span>

@@ -28,7 +28,7 @@ interface Booking {
 }
 
 interface Customer {
-  id: string
+  id: number
   fullName: string
   email: string
   phoneNumber: string
@@ -283,7 +283,7 @@ export default function AdminDashboard() {
       } else if (axios.isAxiosError(requestError) && requestError.response?.status === 403) {
         setCustomersError('Only administrators can view customer details.')
       } else {
-        setCustomersError('Could not load customer details.')
+        setCustomersError('Could not load customer details from the signup database.')
       }
     } finally {
       setCustomersLoading(false)
@@ -667,7 +667,7 @@ export default function AdminDashboard() {
             <div className="flex items-start justify-between gap-5 border-b border-slate-200 p-6 sm:p-8">
               <div>
                 <h2 id="customer-details-title" className="text-2xl font-extrabold text-slate-950">Customer details</h2>
-                <p className="mt-2 text-slate-600">Customers registered with an account.</p>
+                <p className="mt-2 text-slate-600">Customers registered in the signup database.</p>
               </div>
               <button type="button" aria-label="Close customer details" onClick={() => {
                 setCustomerPanelOpen(false)

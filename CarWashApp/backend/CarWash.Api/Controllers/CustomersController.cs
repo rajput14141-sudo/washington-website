@@ -1,9 +1,7 @@
-using CarWash.Api.DTOs;
-using CarWash.Api.Models;
+using CarWash.Api.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
 
 namespace CarWash.Api.Controllers;
 
@@ -12,25 +10,28 @@ namespace CarWash.Api.Controllers;
 [Authorize(Roles = "Admin")]
 public class CustomersController : ControllerBase
 {
-    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IAuthMirror _authMirror;
+    private readonly ILogger<CustomersController> _logger;
 
-    public CustomersController(UserManager<ApplicationUser> userManager)
+    public CustomersController(IAuthMirror authMirror, ILogger<CustomersController> logger)
     {
-        _userManager = userManager;
+        _authMirror = authMirror;
+        _logger = logger;
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<CustomerDetailsDto>>> GetAll()
+    public async Task<ActionResult<IReadOnlyList<CustomerSignupDetails>>> GetAll()
     {
-        var customers = await _userManager.GetUsersInRoleAsync("Customer");
-        return Ok(customers
-            .OrderBy(customer => customer.FullName)
-            .Select(customer => new CustomerDetailsDto(
-                customer.Id,
-                customer.FullName,
-                customer.Email ?? string.Empty,
-                customer.PhoneNumber,
-                customer.Address))
-            .ToList());
+        try
+        {
+            return Ok(await _authMirror.GetCustomerSignupsAsync(HttpContext.RequestAborted));
+        }
+        catch (MySqlException exception)
+        {
+            _logger.LogError(exception, "Could not load customer signup details from MySQL");
+            return Problem(
+                "Could not load customer details from the signup database.",
+                statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
     }
 }

@@ -9,4 +9,3 @@ public record RegisterDto(
 	string? Address = null);
 public record LoginDto(string Email, string Password);
 public record AuthResponseDto(string Token, string Email, string FullName, IList<string> Roles);
-public record CustomerDetailsDto(string Id, string FullName, string Email, string? PhoneNumber, string Address);

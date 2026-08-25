@@ -52,6 +52,10 @@ builder.Services.AddAuthentication(options =>
     });
 
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IAuthMirror, MySqlAuthMirror>();
+builder.Services.AddScoped<IServiceMirror, MySqlServiceMirror>();
+builder.Services.AddScoped<ICustomerRegistrationMirror, MySqlCustomerRegistration>();
+builder.Services.AddScoped<IBookingMirror, MySqlBookingMirror>();
 
 // CORS for the React frontend
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
@@ -64,9 +68,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
     {
-        policy.WithOrigins(allowedOrigins)
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 
@@ -81,6 +86,18 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 });
 
 var app = builder.Build();
+
+/*using (var scope = app.Services.CreateScope())
+{
+    var authMirror = scope.ServiceProvider.GetRequiredService<IAuthMirror>();
+    await authMirror.EnsureSchemaAsync(CancellationToken.None);
+    var serviceMirror = scope.ServiceProvider.GetRequiredService<IServiceMirror>();
+    await serviceMirror.EnsureSchemaAsync(CancellationToken.None);
+    var customerRegistration = scope.ServiceProvider.GetRequiredService<ICustomerRegistrationMirror>();
+    await customerRegistration.EnsureSchemaAsync(CancellationToken.None);
+    var bookingMirror = scope.ServiceProvider.GetRequiredService<IBookingMirror>();
+    await bookingMirror.EnsureSchemaAsync(CancellationToken.None);
+}*/
 
 // Seed roles + admin user + apply migrations
 using (var scope = app.Services.CreateScope())
@@ -110,6 +127,11 @@ using (var scope = app.Services.CreateScope())
             await userManager.AddToRoleAsync(admin, "Admin");
         }
     }
+
+   /* var serviceMirror = scope.ServiceProvider.GetRequiredService<IServiceMirror>();
+    foreach (var service in await db.Services.Where(service => service.IsActive).ToListAsync())
+        await serviceMirror.UpsertAsync(service, CancellationToken.None);
+    */
 }
 
 app.UseForwardedHeaders();
