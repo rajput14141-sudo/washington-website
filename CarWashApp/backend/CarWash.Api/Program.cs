@@ -71,11 +71,9 @@ builder.Services.AddCors(options =>
                   if (allowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
                       return true;
 
-                  return Uri.TryCreate(origin, UriKind.Absolute, out var uri)
-                      && uri.Scheme == Uri.UriSchemeHttps
-                      && uri.Host.StartsWith("washington-website-", StringComparison.OrdinalIgnoreCase)
-                      && uri.Host.EndsWith("-anshu-carwash.vercel.app", StringComparison.OrdinalIgnoreCase);
-              })
+           return Uri.TryCreate(origin, UriKind.Absolute, out var uri)
+    && uri.Scheme == Uri.UriSchemeHttps
+    && uri.Host.EndsWith(".vercel.app", StringComparison.OrdinalIgnoreCase); })
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
