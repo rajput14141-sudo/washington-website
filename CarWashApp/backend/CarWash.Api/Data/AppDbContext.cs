@@ -18,9 +18,9 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         base.OnModelCreating(builder);
 
         builder.Entity<Service>().HasData(
-            new Service { Id = 1, Name = "Basic Car wash", Description = "Daily car cleaning service at your parking spot.", Price = 499, PriceLabel = "499" },
-            new Service { Id = 2, Name = "Full car wash at Center", Description = "Get your car fully cleaned at our service center. The package includes a complete exterior and interior wash for a clean and refreshed vehicle.", Price = 199, PriceLabel = "199" },
-            new Service { Id = 3, Name = "Car Shine & Polishing Package", Description = "Includes car body polishing, mirror shining, and tyre polishing. Available twice a month to keep your car looking its best.", Price = 99, PriceLabel = "99" }
+            new Service { Id = 1, Name = "Basic Wash", Description = "Exterior wash & dry", Price = 400, PriceLabel = "400" },
+            new Service { Id = 2, Name = "Deluxe Wash", Description = "Exterior + interior vacuum", Price = 500, PriceLabel = "500" },
+            new Service { Id = 3, Name = "Full Detail", Description = "Complete interior & exterior detailing", Price = 400, PriceLabel = "400" }
         );
 
         builder.Entity<SiteSetting>().HasData(new SiteSetting { Id = 1, Rating = 4.8m });

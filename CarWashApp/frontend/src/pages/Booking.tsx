@@ -6,7 +6,6 @@ import { api } from '../api/client'
 interface BookingResult {
   id: number
   serviceName: string
-  whatsAppNumber?: string
 }
 
 export default function Booking() {
@@ -46,14 +45,7 @@ export default function Booking() {
         state: {
           bookingId: data.id,
           serviceName: data.serviceName,
-          scheduledAt,
-          whatsAppNumber: data.whatsAppNumber,
-          vehicleName: vehicleName.trim(),
-          address: address.trim(),
-          city: city.trim(),
-          pincode: pincode.trim(),
-          phoneNumber: phoneNumber.trim(),
-          notes: notes.trim()
+          scheduledAt
         }
       })
     } catch (requestError: unknown) {
@@ -106,9 +98,8 @@ export default function Booking() {
         <div>
           <label className="form-label">Phone Number *</label>
           <input className="form-control" type="tel" value={phoneNumber}
-            onChange={e => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
-            minLength={10} maxLength={10} pattern="[0-9]{10}"
-            title="Enter exactly 10 digits" inputMode="numeric" autoComplete="tel" required />
+            onChange={e => setPhoneNumber(e.target.value)} maxLength={30}
+            inputMode="tel" autoComplete="tel" required />
         </div>
         <div>
           <label className="form-label">Date</label>

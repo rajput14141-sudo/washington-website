@@ -10,6 +10,21 @@ interface Service {
   price: number
 }
 
+const highlightedPhrase = 'Available twice a month'
+
+function ServiceDescription({ description }: { description: string }) {
+  const phraseIndex = description.indexOf(highlightedPhrase)
+  if (phraseIndex === -1) return <>{description}</>
+
+  return (
+    <>
+      {description.slice(0, phraseIndex)}
+      <strong className="font-extrabold text-slate-900">{highlightedPhrase}</strong>
+      {description.slice(phraseIndex + highlightedPhrase.length)}
+    </>
+  )
+}
+
 export default function Services() {
   const navigate = useNavigate()
   const [services, setServices] = useState<Service[]>([])
@@ -47,7 +62,9 @@ export default function Services() {
               </div>
             </div>
             <h3 className="mt-5 text-xl font-extrabold leading-7 text-slate-950">{s.name}</h3>
-            <p className="mt-2 flex-1 text-sm leading-6 text-slate-600">{s.description}</p>
+            <p className="mt-2 flex-1 text-sm leading-6 text-slate-600">
+              <ServiceDescription description={s.description} />
+            </p>
             <div className="mt-5 flex items-center justify-between gap-4 border-t border-slate-100 pt-4">
               <p className="min-w-0 truncate text-xl font-black text-teal-800">{formatPrice(s.price)}</p>
               <button

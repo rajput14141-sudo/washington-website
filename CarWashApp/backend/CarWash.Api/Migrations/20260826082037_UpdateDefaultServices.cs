@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -10,6 +11,9 @@ namespace CarWash.Api.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "CustomerRegistrations");
+
             migrationBuilder.UpdateData(
                 table: "Services",
                 keyColumn: "Id",
@@ -30,11 +34,38 @@ namespace CarWash.Api.Migrations
                 keyValue: 3,
                 columns: new[] { "Description", "Name", "Price", "PriceLabel" },
                 values: new object[] { "Includes car body polishing, mirror shining, and tyre polishing. Available twice a month to keep your car looking its best.", "Car Shine & Polishing Package", 99m, "99" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_PhoneNumber",
+                table: "AspNetUsers",
+                column: "PhoneNumber",
+                unique: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropIndex(
+                name: "IX_AspNetUsers_PhoneNumber",
+                table: "AspNetUsers");
+
+            migrationBuilder.CreateTable(
+                name: "CustomerRegistrations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Address = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Email = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
+                    Phone = table.Column<string>(type: "TEXT", maxLength: 30, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CustomerRegistrations", x => x.Id);
+                });
+
             migrationBuilder.UpdateData(
                 table: "Services",
                 keyColumn: "Id",
@@ -55,6 +86,12 @@ namespace CarWash.Api.Migrations
                 keyValue: 3,
                 columns: new[] { "Description", "Name", "Price", "PriceLabel" },
                 values: new object[] { "Complete interior & exterior detailing", "Full Detail", 400m, "400" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomerRegistrations_Email",
+                table: "CustomerRegistrations",
+                column: "Email",
+                unique: true);
         }
     }
 }
