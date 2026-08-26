@@ -44,9 +44,9 @@ public class BookingsController : ControllerBase
             Status = BookingStatus.Pending
         };
         _db.Bookings.Add(booking);
-        await _db.SaveChangesAsync();
+await _db.SaveChangesAsync();
 
-        return Ok(new CreateBookingResultDto(booking.Id, service.Name));
+return Ok(new CreateBookingResultDto(booking.Id, service.Name));
     }
 
     // Customer: view own bookings
