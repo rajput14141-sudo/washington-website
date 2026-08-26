@@ -106,8 +106,9 @@ export default function Booking() {
         <div>
           <label className="form-label">Phone Number *</label>
           <input className="form-control" type="tel" value={phoneNumber}
-            onChange={e => setPhoneNumber(e.target.value)} maxLength={30}
-            inputMode="tel" autoComplete="tel" required />
+            onChange={e => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+            minLength={10} maxLength={10} pattern="[0-9]{10}"
+            title="Enter exactly 10 digits" inputMode="numeric" autoComplete="tel" required />
         </div>
         <div>
           <label className="form-label">Date</label>

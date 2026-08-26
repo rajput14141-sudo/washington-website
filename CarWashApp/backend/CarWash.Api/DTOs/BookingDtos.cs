@@ -22,7 +22,8 @@ public record CreateBookingDto(
     [Required, MaxLength(300)] string Address,
     [Required, MaxLength(100)] string City,
     [Required, MaxLength(20)] string Pincode,
-    [Required, Phone, MaxLength(30)] string PhoneNumber
+    [Required, RegularExpression(@"^\d{10}$", ErrorMessage = "Phone number must contain exactly 10 digits.")]
+    string PhoneNumber
 );
 
 public record CreateBookingResultDto(int Id, string ServiceName, string? WhatsAppNumber);

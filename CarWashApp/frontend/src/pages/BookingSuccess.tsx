@@ -113,7 +113,7 @@ export default function BookingSuccess() {
               className="primary-button gap-2 bg-[#128c7e] hover:bg-[#0e7469]"
             >
               <MessageCircle size={19} aria-hidden="true" />
-              Confirm on WhatsApp
+              Click for Confirm Booking
             </button>
           )}
           <Link to="/dashboard" className="primary-button">View My Bookings</Link>
