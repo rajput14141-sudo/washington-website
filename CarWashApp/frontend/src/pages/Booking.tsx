@@ -45,7 +45,13 @@ export default function Booking() {
         state: {
           bookingId: data.id,
           serviceName: data.serviceName,
-          scheduledAt
+          scheduledAt,
+          vehicleName: vehicleName.trim(),
+          phoneNumber: phoneNumber.trim(),
+          address: address.trim(),
+          city: city.trim(),
+          pincode: pincode.trim(),
+          notes: notes.trim()
         }
       })
     } catch (requestError: unknown) {

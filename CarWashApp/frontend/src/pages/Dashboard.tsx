@@ -44,7 +44,7 @@ export default function Dashboard() {
               <p className="mt-1 text-sm text-slate-500">{b.address}, {b.city} - {b.pincode}</p>
             </div>
             <span className="rounded-full bg-teal-50 px-4 py-2 text-sm font-bold text-teal-800">
-              {b.status}
+              {b.status === 'Pending' ? 'Your booking confirmed' : b.status}
             </span>
           </div>
         ))}

@@ -1,10 +1,16 @@
-import { CalendarDays, Check, PartyPopper } from 'lucide-react'
+import { CalendarDays, Check, MessageCircle, PartyPopper } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 
 interface BookingSuccessState {
   bookingId?: number
   serviceName?: string
   scheduledAt?: string
+  vehicleName?: string
+  phoneNumber?: string
+  address?: string
+  city?: string
+  pincode?: string
+  notes?: string
 }
 
 const confetti = [
@@ -28,6 +34,27 @@ export default function BookingSuccess() {
         year: 'numeric'
       })
     : null
+  const whatsAppNumber = '919220475319'
+  const whatsAppMessage = [
+    'Hello, I would like to confirm my car wash booking.',
+    details.bookingId ? `Booking Number: #${details.bookingId}` : null,
+    details.serviceName ? `Service: ${details.serviceName}` : null,
+    details.vehicleName ? `Vehicle: ${details.vehicleName}` : null,
+    bookingDate ? `Date: ${bookingDate}` : null,
+    details.phoneNumber ? `Customer Phone: ${details.phoneNumber}` : null,
+    details.address
+      ? `Address: ${details.address}, ${details.city ?? ''} ${details.pincode ?? ''}`.trim()
+      : null,
+    `Notes: ${details.notes || 'N/A'}`
+  ].filter(Boolean).join('\n')
+
+  function handleWhatsAppClick() {
+    const encodedMessage = encodeURIComponent(whatsAppMessage)
+    const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+    window.location.href = isMobileDevice
+      ? `whatsapp://send?phone=${whatsAppNumber}&text=${encodedMessage}`
+      : `https://wa.me/${whatsAppNumber}?text=${encodedMessage}`
+  }
 
   return (
     <main className="page-shell flex min-h-[70vh] items-center justify-center">
@@ -76,9 +103,19 @@ export default function BookingSuccess() {
           </div>
         )}
 
-        <div className="relative mt-9 flex flex-col justify-center gap-3 sm:flex-row">
-          <Link to="/dashboard" className="primary-button">View My Bookings</Link>
-          <Link to="/services" className="secondary-button">Browse Services</Link>
+        <div className="relative mx-auto mt-9 flex max-w-xl flex-col gap-3">
+          <button
+            type="button"
+            onClick={handleWhatsAppClick}
+            className="primary-button w-full gap-2 bg-[#128c7e] hover:bg-[#0e7469]"
+          >
+            <MessageCircle size={19} aria-hidden="true" />
+            Click for Confirmation
+          </button>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Link to="/dashboard" className="primary-button flex-1">View My Bookings</Link>
+            <Link to="/services" className="secondary-button flex-1">Browse Services</Link>
+          </div>
         </div>
       </section>
     </main>
