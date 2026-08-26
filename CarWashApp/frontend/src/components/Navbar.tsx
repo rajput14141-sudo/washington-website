@@ -54,6 +54,7 @@ export default function Navbar() {
         <div className="hidden items-center gap-6 text-sm font-bold text-slate-700 sm:flex">
           <Link className="transition hover:text-teal-700" to="/services">Services</Link>
           {user && !user.roles.includes('Admin') && <Link className="transition hover:text-teal-700" to="/dashboard">My Bookings</Link>}
+          <a className="transition hover:text-teal-700" href="/#contact">Contact Us</a>
           {!user && <Link className="transition hover:text-teal-700" to="/admin-access">Admin</Link>}
           {user?.roles.includes('Admin') && <Link className="hidden transition hover:text-teal-700 md:block" to="/admin">Admin</Link>}
         {user ? (
@@ -112,11 +113,12 @@ export default function Navbar() {
           )}
           <div className="grid gap-1 text-sm font-bold text-slate-700">
             <Link onClick={() => setMobileOpen(false)} to="/services" className="rounded-lg px-3 py-3 hover:bg-slate-50">Services</Link>
+            {user && !user.roles.includes('Admin') && (
+              <Link onClick={() => setMobileOpen(false)} to="/dashboard" className="rounded-lg px-3 py-3 hover:bg-slate-50">My Bookings</Link>
+            )}
+            <a onClick={() => setMobileOpen(false)} href="/#contact" className="rounded-lg px-3 py-3 hover:bg-slate-50">Contact Us</a>
             {user ? (
               <>
-                {!user.roles.includes('Admin') && (
-                  <Link onClick={() => setMobileOpen(false)} to="/dashboard" className="rounded-lg px-3 py-3 hover:bg-slate-50">My Bookings</Link>
-                )}
                 {user.roles.includes('Admin') && (
                   <Link onClick={() => setMobileOpen(false)} to="/admin" className="rounded-lg px-3 py-3 hover:bg-slate-50">Admin Dashboard</Link>
                 )}

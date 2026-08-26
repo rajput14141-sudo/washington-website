@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
+import Footer from './components/Footer'
 import Home from './pages/Home'
 import Services from './pages/Services'
 import AdminDashboard from './pages/AdminDashboard'
@@ -21,19 +22,22 @@ function RequireAuth({ children, adminOnly = false }: { children: JSX.Element, a
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-[#f6f9f9]">
+    <div className="flex min-h-screen flex-col bg-[#f6f9f9]">
       <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/services" element={<Services />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/admin-access" element={<AdminAuth />} />
-        <Route path="/book/:serviceId" element={<RequireAuth><Booking /></RequireAuth>} />
-        <Route path="/booking-success" element={<RequireAuth><BookingSuccess /></RequireAuth>} />
-        <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
-        <Route path="/admin" element={<RequireAuth adminOnly><AdminDashboard /></RequireAuth>} />
-      </Routes>
+      <main className="flex-1">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/admin-access" element={<AdminAuth />} />
+          <Route path="/book/:serviceId" element={<RequireAuth><Booking /></RequireAuth>} />
+          <Route path="/booking-success" element={<RequireAuth><BookingSuccess /></RequireAuth>} />
+          <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+          <Route path="/admin" element={<RequireAuth adminOnly><AdminDashboard /></RequireAuth>} />
+        </Routes>
+      </main>
+      <Footer />
     </div>
   )
 }
