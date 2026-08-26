@@ -3,6 +3,7 @@ using CarWash.Api.Models;
 using CarWash.Api.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarWash.Api.Controllers;
 
@@ -22,31 +23,34 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<ActionResult<AuthResponseDto>> Register(RegisterDto dto)
+    public async Task<ActionResult<AuthResponseDto>> Register(CustomerRegisterDto dto)
     {
-        var mobileNumber = dto.PhoneNumber?.Trim() ?? string.Empty;
-        if (mobileNumber.Length != 10 || mobileNumber.Any(character => !char.IsDigit(character)))
-            return BadRequest(new[] { "Mobile number must contain exactly 10 digits." });
+        if (string.IsNullOrWhiteSpace(dto.FullName))
+            return BadRequest(new[] { "Name is required." });
 
         if (string.IsNullOrWhiteSpace(dto.Address))
             return BadRequest(new[] { "Address is required." });
 
+        if (dto.Password != dto.ConfirmPassword)
+            return BadRequest(new[] { "Password and confirm password do not match." });
+
+        var mobileNumber = dto.PhoneNumber.Trim();
         var email = dto.Email.Trim().ToLowerInvariant();
         if (await _userManager.FindByEmailAsync(email) is not null)
             return BadRequest(new[] { "An account with this email already exists." });
 
-        if (_userManager.Users.Any(user => user.PhoneNumber == mobileNumber))
+        if (await _userManager.Users.AnyAsync(user => user.PhoneNumber == mobileNumber))
             return BadRequest(new[] { "An account with this mobile number already exists." });
 
         var user = new ApplicationUser
         {
-            UserName = email,
+            UserName = mobileNumber,
             Email = email,
             FullName = dto.FullName.Trim(),
             PhoneNumber = mobileNumber,
             Address = dto.Address.Trim()
         };
-        var result = await _userManager.CreateAsync(user, mobileNumber);
+        var result = await _userManager.CreateAsync(user, dto.Password);
 
         if (!result.Succeeded)
             return BadRequest(result.Errors.Select(e => e.Description));
@@ -65,9 +69,14 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<AuthResponseDto>> Login(LoginDto dto)
+    public async Task<ActionResult<AuthResponseDto>> Login(CustomerLoginDto dto)
     {
-        var user = await _userManager.FindByEmailAsync(dto.Email.Trim());
+        var mobileNumber = dto.PhoneNumber.Trim();
+        if (mobileNumber.Length != 10 || mobileNumber.Any(character => !char.IsDigit(character)))
+            return Unauthorized("Invalid mobile number or password");
+
+        var user = await _userManager.Users
+            .SingleOrDefaultAsync(candidate => candidate.PhoneNumber == mobileNumber);
         if (user is null) return Unauthorized("Invalid credentials");
 
         if (!await _userManager.CheckPasswordAsync(user, dto.Password))
@@ -82,6 +91,9 @@ public class AuthController : ControllerBase
     [HttpPost("admin/register")]
     public async Task<ActionResult<AuthResponseDto>> RegisterAdmin(RegisterDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.Password))
+            return BadRequest(new[] { "Password is required." });
+
         var user = new ApplicationUser { UserName = dto.Email, Email = dto.Email, FullName = dto.FullName };
         var result = await _userManager.CreateAsync(user, dto.Password);
 

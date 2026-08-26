@@ -9,8 +9,8 @@ interface AuthUser {
 
 interface AuthContextType {
   user: AuthUser | null
-  login: (email: string, password: string) => Promise<void>
-  register: (fullName: string, email: string, phoneNumber: string, address: string) => Promise<void>
+  login: (phoneNumber: string, password: string) => Promise<void>
+  register: (fullName: string, email: string, phoneNumber: string, address: string, password: string, confirmPassword: string) => Promise<void>
   adminLogin: (email: string, password: string) => Promise<void>
   adminRegister: (fullName: string, email: string, password: string) => Promise<void>
   logout: () => void
@@ -30,13 +30,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(u)
   }
 
-  async function login(email: string, password: string) {
-    const { data } = await api.post('/auth/login', { email, password })
+  async function login(phoneNumber: string, password: string) {
+    const { data } = await api.post('/auth/login', { phoneNumber, password })
     persist(data.token, { email: data.email, fullName: data.fullName, roles: data.roles })
   }
 
-  async function register(fullName: string, email: string, phoneNumber: string, address: string) {
-    await api.post('/auth/register', { fullName, email, phoneNumber, address })
+  async function register(fullName: string, email: string, phoneNumber: string, address: string, password: string, confirmPassword: string) {
+    await api.post('/auth/register', { fullName, email, phoneNumber, address, password, confirmPassword })
   }
 
   async function adminLogin(email: string, password: string) {

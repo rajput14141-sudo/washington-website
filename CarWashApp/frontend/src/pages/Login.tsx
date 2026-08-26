@@ -6,9 +6,9 @@ export default function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const loginState = location.state as { registered?: boolean, email?: string, from?: string } | null
-  const [email, setEmail] = useState(loginState?.email ?? '')
-  const [phoneNumber, setPhoneNumber] = useState('')
+  const loginState = location.state as { registered?: boolean, phoneNumber?: string, from?: string } | null
+  const [phoneNumber, setPhoneNumber] = useState(loginState?.phoneNumber ?? '')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
 
   async function handleSubmit(event: FormEvent) {
@@ -16,10 +16,10 @@ export default function Login() {
     setError('')
 
     try {
-      await login(email, phoneNumber)
+      await login(phoneNumber, password)
       navigate(loginState?.from ?? '/services', { replace: true })
     } catch {
-      setError('Invalid Gmail or phone number.')
+      setError('Invalid mobile number or password.')
     }
   }
 
@@ -28,17 +28,20 @@ export default function Login() {
       <section className="surface-card w-full max-w-md p-7 sm:p-10">
         <p className="mb-3 text-sm font-black uppercase tracking-[0.2em] text-teal-700">Customer access</p>
         <h1 className="section-title mb-3">Customer login</h1>
-        <p className="mb-8 text-slate-600">Use your registered Gmail and phone number.</p>
+        <p className="mb-8 text-slate-600">Use your registered mobile number and password.</p>
         {loginState?.registered && (
           <p className="mb-5 rounded-lg bg-teal-50 px-4 py-3 text-sm font-semibold text-teal-800">
             Registration successful. Log in to continue.
           </p>
         )}
         <form onSubmit={handleSubmit} className="space-y-5">
-          <input className="form-control" type="email" placeholder="Gmail (User ID)"
-            value={email} onChange={event => setEmail(event.target.value)} required />
-          <input className="form-control" type="password" placeholder="Phone number (Password)"
-            value={phoneNumber} onChange={event => setPhoneNumber(event.target.value)} required />
+          <input className="form-control" type="tel" placeholder="Mobile number (User ID)"
+            value={phoneNumber} onChange={event => setPhoneNumber(event.target.value.replace(/\D/g, '').slice(0, 10))}
+            inputMode="numeric" pattern="[0-9]{10}" minLength={10} maxLength={10}
+            autoComplete="username" required />
+          <input className="form-control" type="password" placeholder="Password"
+            value={password} onChange={event => setPassword(event.target.value)}
+            autoComplete="current-password" required />
           {error && <p className="text-sm font-medium text-red-600">{error}</p>}
           <button className="primary-button w-full">Customer Login</button>
           <p className="text-center text-sm text-slate-600">

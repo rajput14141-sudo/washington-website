@@ -12,16 +12,23 @@ export default function Register() {
   const [email, setEmail] = useState('')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [address, setAddress] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError('')
+    if (password !== confirmPassword) {
+      setError('Password and re-entered password do not match.')
+      return
+    }
+
     try {
-      await register(fullName, email, phoneNumber, address)
+      await register(fullName, email, phoneNumber, address, password, confirmPassword)
       navigate('/login', {
         replace: true,
-        state: { registered: true, email, from: registration?.from }
+        state: { registered: true, phoneNumber, from: registration?.from }
       })
     } catch (requestError) {
       if (axios.isAxiosError(requestError)) {
@@ -41,16 +48,40 @@ export default function Register() {
         <h2 className="section-title mb-3">Customer registration</h2>
         <p className="mb-8 text-slate-600">Register your details to book a doorstep car wash.</p>
       <form onSubmit={handleSubmit} className="space-y-5">
-        <input className="form-control" placeholder="Full name"
-          value={fullName} onChange={e => setFullName(e.target.value)} required />
-        <input className="form-control" type="email" placeholder="Email address"
-          value={email} onChange={e => setEmail(e.target.value)} required />
-        <input className="form-control" type="tel" placeholder="10-digit phone number"
-          value={phoneNumber} onChange={e => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
-          inputMode="numeric" pattern="[0-9]{10}" minLength={10} maxLength={10}
-          autoComplete="tel" required />
-        <textarea className="form-control min-h-24 resize-y" placeholder="Address"
-          value={address} onChange={e => setAddress(e.target.value)} required />
+        <div>
+          <label className="form-label" htmlFor="customer-name">Name *</label>
+          <input id="customer-name" className="form-control" placeholder="Enter your full name"
+            value={fullName} onChange={e => setFullName(e.target.value)} autoComplete="name" required />
+        </div>
+        <div>
+          <label className="form-label" htmlFor="customer-address">Address *</label>
+          <textarea id="customer-address" className="form-control min-h-24 resize-y" placeholder="Enter your complete address"
+            value={address} onChange={e => setAddress(e.target.value)} autoComplete="street-address" required />
+        </div>
+        <div>
+          <label className="form-label" htmlFor="customer-mobile">Mobile Number *</label>
+          <input id="customer-mobile" className="form-control" type="tel" placeholder="Enter 10-digit mobile number"
+            value={phoneNumber} onChange={e => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+            inputMode="numeric" pattern="[0-9]{10}" minLength={10} maxLength={10}
+            autoComplete="tel" required />
+        </div>
+        <div>
+          <label className="form-label" htmlFor="customer-email">Email Address *</label>
+          <input id="customer-email" className="form-control" type="email" placeholder="Enter your email address"
+            value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required />
+        </div>
+        <div>
+          <label className="form-label" htmlFor="customer-password">Create Password *</label>
+          <input id="customer-password" className="form-control" type="password" placeholder="Minimum 8 characters"
+            value={password} onChange={e => setPassword(e.target.value)} minLength={8}
+            autoComplete="new-password" required />
+        </div>
+        <div>
+          <label className="form-label" htmlFor="customer-confirm-password">Re-enter Password *</label>
+          <input id="customer-confirm-password" className="form-control" type="password" placeholder="Enter the same password again"
+            value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} minLength={8}
+            autoComplete="new-password" required />
+        </div>
         {error && <p className="text-red-600 text-sm">{error}</p>}
         <button className="primary-button w-full">Register Customer</button>
       </form>
