@@ -30,19 +30,19 @@ public class BookingsController : ControllerBase
             candidate.Id == dto.VehicleId && candidate.UserId == CurrentUserId);
         if (vehicle is null) return BadRequest("Select a valid vehicle.");
 
-        var booking = new Booking
-        {
-            UserId = CurrentUserId,
-            VehicleId = vehicle.Id,
-            ServiceId = dto.ServiceId,
-            ScheduledAt = dto.ScheduledAt,
-            Notes = dto.Notes,
-            Address = dto.Address.Trim(),
-            City = dto.City.Trim(),
-            Pincode = dto.Pincode.Trim(),
-            PhoneNumber = dto.PhoneNumber.Trim(),
-            Status = BookingStatus.Pending
-        };
+      var booking = new Booking
+{
+    UserId = CurrentUserId,
+    VehicleId = vehicle.Id,
+    ServiceId = dto.ServiceId,
+    ScheduledAt = DateTime.SpecifyKind(dto.ScheduledAt, DateTimeKind.Utc),
+    Notes = dto.Notes,
+    Address = dto.Address.Trim(),
+    City = dto.City.Trim(),
+    Pincode = dto.Pincode.Trim(),
+    PhoneNumber = dto.PhoneNumber.Trim(),
+    Status = BookingStatus.Pending
+};
         _db.Bookings.Add(booking);
 await _db.SaveChangesAsync();
 
