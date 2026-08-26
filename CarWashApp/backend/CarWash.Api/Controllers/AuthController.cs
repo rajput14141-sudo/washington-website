@@ -13,13 +13,19 @@ public class AuthController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ITokenService _tokenService;
+    private readonly IEmailService _emailService;
+    private readonly IConfiguration _configuration;
 
     public AuthController(
         UserManager<ApplicationUser> userManager,
-        ITokenService tokenService)
+        ITokenService tokenService,
+        IEmailService emailService,
+        IConfiguration configuration)
     {
         _userManager = userManager;
         _tokenService = tokenService;
+        _emailService = emailService;
+        _configuration = configuration;
     }
 
     [HttpPost("register")]
@@ -86,6 +92,42 @@ public class AuthController : ControllerBase
         var token = _tokenService.CreateToken(user, roles);
 
         return Ok(new AuthResponseDto(token, user.Email!, user.FullName, roles));
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
+    {
+        if (!_emailService.IsConfigured)
+            return Problem("Password reset email is not configured.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+        var email = dto.Email.Trim().ToLowerInvariant();
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user is not null && await _userManager.IsInRoleAsync(user, "Customer"))
+        {
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var frontendBaseUrl = (_configuration["Frontend:BaseUrl"] ?? "http://localhost:5173").TrimEnd('/');
+            var resetUrl = $"{frontendBaseUrl}/reset-password?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}";
+            await _emailService.SendPasswordResetAsync(email, resetUrl);
+        }
+
+        return Ok(new { message = "If the email is registered, a password reset link has been sent." });
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
+    {
+        if (dto.NewPassword != dto.ConfirmPassword)
+            return BadRequest(new[] { "Password and confirm password do not match." });
+
+        var user = await _userManager.FindByEmailAsync(dto.Email.Trim().ToLowerInvariant());
+        if (user is null || !await _userManager.IsInRoleAsync(user, "Customer"))
+            return BadRequest(new[] { "Invalid password reset request." });
+
+        var result = await _userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
+        if (!result.Succeeded)
+            return BadRequest(result.Errors.Select(error => error.Description));
+
+        return Ok(new { message = "Password reset successful. You can now log in with your mobile number." });
     }
 
     [HttpPost("admin/register")]

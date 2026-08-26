@@ -23,5 +23,12 @@ public record CustomerLoginDto(
 	[Required, RegularExpression(@"^\d{10}$", ErrorMessage = "Mobile number must contain exactly 10 digits.")]
 	string PhoneNumber,
 	[Required] string Password);
+public record ForgotPasswordDto(
+	[Required, EmailAddress, MaxLength(256)] string Email);
+public record ResetPasswordDto(
+	[Required, EmailAddress, MaxLength(256)] string Email,
+	[Required] string Token,
+	[Required, MinLength(8), MaxLength(100)] string NewPassword,
+	[Required] string ConfirmPassword);
 public record AuthResponseDto(string Token, string Email, string FullName, IList<string> Roles);
 public record CustomerDetailsDto(string Id, string FullName, string Email, string? PhoneNumber, string Address);
