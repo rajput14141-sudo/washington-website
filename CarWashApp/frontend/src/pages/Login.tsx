@@ -42,6 +42,11 @@ export default function Login() {
           <input className="form-control" type="password" placeholder="Password"
             value={password} onChange={event => setPassword(event.target.value)}
             autoComplete="current-password" required />
+          <div className="text-right">
+            <Link to="/forgot-password" className="text-sm font-bold text-teal-700 hover:text-teal-900">
+              Forgot password?
+            </Link>
+          </div>
           {error && <p className="text-sm font-medium text-red-600">{error}</p>}
           <button className="primary-button w-full">Customer Login</button>
           <p className="text-center text-sm text-slate-600">

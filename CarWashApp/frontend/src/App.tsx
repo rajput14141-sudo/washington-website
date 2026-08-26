@@ -9,6 +9,8 @@ import BookingSuccess from './pages/BookingSuccess'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import AdminAuth from './pages/AdminAuth'
 import { useAuth } from './context/AuthContext'
 
@@ -30,6 +32,8 @@ export default function App() {
           <Route path="/services" element={<Services />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/admin-access" element={<AdminAuth />} />
           <Route path="/book/:serviceId" element={<RequireAuth><Booking /></RequireAuth>} />
           <Route path="/booking-success" element={<RequireAuth><BookingSuccess /></RequireAuth>} />
