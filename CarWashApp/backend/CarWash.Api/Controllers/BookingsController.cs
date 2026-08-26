@@ -14,8 +14,13 @@ namespace CarWash.Api.Controllers;
 public class BookingsController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly IConfiguration _configuration;
 
-    public BookingsController(AppDbContext db) => _db = db;
+    public BookingsController(AppDbContext db, IConfiguration configuration)
+    {
+        _db = db;
+        _configuration = configuration;
+    }
 
     private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub")!;
 
@@ -46,7 +51,8 @@ public class BookingsController : ControllerBase
         _db.Bookings.Add(booking);
         await _db.SaveChangesAsync();
 
-        return Ok(new CreateBookingResultDto(booking.Id, service.Name));
+        var whatsAppNumber = _configuration["WhatsApp:Number"];
+        return Ok(new CreateBookingResultDto(booking.Id, service.Name, whatsAppNumber));
     }
 
     // Customer: view own bookings

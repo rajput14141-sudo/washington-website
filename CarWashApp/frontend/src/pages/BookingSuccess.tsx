@@ -1,10 +1,17 @@
-import { CalendarDays, Check, PartyPopper } from 'lucide-react'
+import { CalendarDays, Check, MessageCircle, PartyPopper } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 
 interface BookingSuccessState {
   bookingId?: number
   serviceName?: string
   scheduledAt?: string
+  whatsAppNumber?: string
+  vehicleName?: string
+  address?: string
+  city?: string
+  pincode?: string
+  phoneNumber?: string
+  notes?: string
 }
 
 const confetti = [
@@ -28,6 +35,28 @@ export default function BookingSuccess() {
         year: 'numeric'
       })
     : null
+  const whatsAppNumber = details.whatsAppNumber?.replace(/\D/g, '')
+  const whatsAppMessage = [
+    'Hello, I would like to confirm my car wash booking.',
+    details.bookingId ? `Booking number: #${details.bookingId}` : null,
+    details.serviceName ? `Service: ${details.serviceName}` : null,
+    details.vehicleName ? `Vehicle: ${details.vehicleName}` : null,
+    bookingDate ? `Date: ${bookingDate}` : null,
+    details.phoneNumber ? `Customer phone: ${details.phoneNumber}` : null,
+    details.address ? `Address: ${details.address}, ${details.city ?? ''} ${details.pincode ?? ''}`.trim() : null,
+    `Notes: ${details.notes || 'N/A'}`
+  ].filter(Boolean).join('\n')
+  const encodedMessage = encodeURIComponent(whatsAppMessage)
+  const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+  const whatsAppUrl = !whatsAppNumber
+    ? null
+    : isMobileDevice
+      ? `whatsapp://send?phone=${whatsAppNumber}&text=${encodedMessage}`
+      : `https://wa.me/${whatsAppNumber}?text=${encodedMessage}`
+
+  function handleWhatsAppClick() {
+    if (whatsAppUrl) window.location.href = whatsAppUrl
+  }
 
   return (
     <main className="page-shell flex min-h-[70vh] items-center justify-center">
@@ -77,6 +106,16 @@ export default function BookingSuccess() {
         )}
 
         <div className="relative mt-9 flex flex-col justify-center gap-3 sm:flex-row">
+          {whatsAppUrl && (
+            <button
+              type="button"
+              onClick={handleWhatsAppClick}
+              className="primary-button gap-2 bg-[#128c7e] hover:bg-[#0e7469]"
+            >
+              <MessageCircle size={19} aria-hidden="true" />
+              Confirm on WhatsApp
+            </button>
+          )}
           <Link to="/dashboard" className="primary-button">View My Bookings</Link>
           <Link to="/services" className="secondary-button">Browse Services</Link>
         </div>

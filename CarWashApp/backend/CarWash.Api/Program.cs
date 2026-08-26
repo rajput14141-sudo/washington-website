@@ -11,8 +11,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddUserSecrets(typeof(Program).Assembly, optional: true);
 
 // DB
+var sqliteConnectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is required.");
+var sqliteDataDirectory = builder.Configuration["Sqlite:DataDirectory"];
+if (!string.IsNullOrWhiteSpace(sqliteDataDirectory))
+{
+    Directory.CreateDirectory(sqliteDataDirectory);
+    sqliteConnectionString = $"Data Source={Path.Combine(sqliteDataDirectory, "carwash.db")}";
+}
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite(sqliteConnectionString));
 
 // Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>

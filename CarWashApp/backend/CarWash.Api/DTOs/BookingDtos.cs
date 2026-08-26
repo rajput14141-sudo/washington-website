@@ -25,7 +25,7 @@ public record CreateBookingDto(
     [Required, Phone, MaxLength(30)] string PhoneNumber
 );
 
-public record CreateBookingResultDto(int Id, string ServiceName);
+public record CreateBookingResultDto(int Id, string ServiceName, string? WhatsAppNumber);
 
 public record BookingDto(
     int Id,

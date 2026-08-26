@@ -6,6 +6,7 @@ import { api } from '../api/client'
 interface BookingResult {
   id: number
   serviceName: string
+  whatsAppNumber?: string
 }
 
 export default function Booking() {
@@ -45,7 +46,14 @@ export default function Booking() {
         state: {
           bookingId: data.id,
           serviceName: data.serviceName,
-          scheduledAt
+          scheduledAt,
+          whatsAppNumber: data.whatsAppNumber,
+          vehicleName: vehicleName.trim(),
+          address: address.trim(),
+          city: city.trim(),
+          pincode: pincode.trim(),
+          phoneNumber: phoneNumber.trim(),
+          notes: notes.trim()
         }
       })
     } catch (requestError: unknown) {
