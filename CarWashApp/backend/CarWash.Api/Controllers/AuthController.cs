@@ -109,7 +109,14 @@ public class AuthController : ControllerBase
             var resetUrl = $"{frontendBaseUrl}/reset-password?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}";
            try
 {
+   try
+{
     await _emailService.SendPasswordResetAsync(email, resetUrl);
+}
+catch (Exception ex)
+{
+    return BadRequest(ex.Message);
+}
 }
 catch (Exception ex)
 {
