@@ -36,11 +36,10 @@ public class SmtpEmailService : IEmailService
         var port = _configuration.GetValue("Email:Port", 587);
         var useSsl = _configuration.GetValue("Email:UseSsl", false);
         using var client = new SmtpClient();
-        await client.ConnectAsync(
-            _configuration["Email:Host"],
-            port,
-            useSsl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTlsWhenAvailable);
-
+       await client.ConnectAsync(
+    _configuration["Email:Host"],
+    587,
+    SecureSocketOptions.StartTls);
         var username = _configuration["Email:Username"];
         if (!string.IsNullOrWhiteSpace(username))
             await client.AuthenticateAsync(username, _configuration["Email:Password"]);
