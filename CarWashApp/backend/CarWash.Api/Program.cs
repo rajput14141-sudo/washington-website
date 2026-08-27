@@ -58,6 +58,7 @@ var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get
     ?? [builder.Configuration["Cors:AllowedOrigin"] ?? string.Empty];
 allowedOrigins = allowedOrigins
     .Where(origin => !string.IsNullOrWhiteSpace(origin))
+    .Select(origin => origin.Trim().TrimEnd('/'))
     .ToArray();
 
 if (allowedOrigins.Length == 0)
@@ -114,8 +115,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
 app.UseCors("Frontend");
+if (app.Environment.IsDevelopment())
+    app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

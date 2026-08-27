@@ -15,17 +15,27 @@ public class SmtpEmailService : IEmailService
 
     public bool IsConfigured =>
         !string.IsNullOrWhiteSpace(_configuration["Email:Host"]) &&
-        !string.IsNullOrWhiteSpace(_configuration["Email:FromAddress"]);
+        !string.IsNullOrWhiteSpace(_configuration["Email:FromAddress"]) &&
+        !string.IsNullOrWhiteSpace(_configuration["Email:Username"]) &&
+        !string.IsNullOrWhiteSpace(_configuration["Email:Password"]);
 
-    public async Task SendPasswordResetAsync(string recipientEmail, string resetUrl)
+    public async Task SendPasswordResetAsync(
+        string recipientEmail,
+        string resetUrl,
+        CancellationToken cancellationToken = default)
     {
         if (!IsConfigured)
             throw new InvalidOperationException("Password reset email is not configured.");
 
+        var host = _configuration["Email:Host"]!;
+        var fromAddress = _configuration["Email:FromAddress"]!;
+        var username = _configuration["Email:Username"]!;
+        var password = _configuration["Email:Password"]!;
+
         var message = new MimeMessage();
         message.From.Add(new MailboxAddress(
             _configuration["Email:FromName"] ?? "Mr.WashingTon Car Wash",
-            _configuration["Email:FromAddress"]));
+            fromAddress));
         message.To.Add(MailboxAddress.Parse(recipientEmail));
         message.Subject = "Reset your Mr.WashingTon password";
         message.Body = new TextPart("plain")
@@ -33,35 +43,18 @@ public class SmtpEmailService : IEmailService
             Text = $"Use this link to reset your password:\n\n{resetUrl}\n\nIf you did not request this, you can ignore this email."
         };
 
-        using var client = new SmtpClient();
+        var port = _configuration.GetValue("Email:Port", 587);
+        var socketOptions = _configuration.GetValue("Email:UseSsl", false)
+            ? SecureSocketOptions.SslOnConnect
+            : SecureSocketOptions.StartTls;
 
-Console.WriteLine("Connecting SMTP...");
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(30));
 
-await client.ConnectAsync(
-    "smtp.gmail.com",
-    587,
-    SecureSocketOptions.StartTls);
-
-Console.WriteLine("Connected SMTP");
-
-var username = _configuration["Email:Username"];
-
-Console.WriteLine("Authenticating SMTP...");
-
-if (!string.IsNullOrWhiteSpace(username))
-{
-    await client.AuthenticateAsync(
-        username,
-        _configuration["Email:Password"]);
-}
-
-Console.WriteLine("Authenticated SMTP");
-
-await client.SendAsync(message);
-
-Console.WriteLine("Email sent");
-
-await client.DisconnectAsync(true);
-       
+        using var client = new SmtpClient { Timeout = 30000 };
+        await client.ConnectAsync(host, port, socketOptions, timeout.Token);
+        await client.AuthenticateAsync(username, password, timeout.Token);
+        await client.SendAsync(message, timeout.Token);
+        await client.DisconnectAsync(true, timeout.Token);
     }
 }

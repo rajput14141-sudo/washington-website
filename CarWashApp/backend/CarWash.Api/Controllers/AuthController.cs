@@ -15,17 +15,20 @@ public class AuthController : ControllerBase
     private readonly ITokenService _tokenService;
     private readonly IEmailService _emailService;
     private readonly IConfiguration _configuration;
+    private readonly ILogger<AuthController> _logger;
 
     public AuthController(
         UserManager<ApplicationUser> userManager,
         ITokenService tokenService,
         IEmailService emailService,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        ILogger<AuthController> logger)
     {
         _userManager = userManager;
         _tokenService = tokenService;
         _emailService = emailService;
         _configuration = configuration;
+        _logger = logger;
     }
 
     [HttpPost("register")]
@@ -107,35 +110,17 @@ public class AuthController : ControllerBase
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var frontendBaseUrl = (_configuration["Frontend:BaseUrl"] ?? "http://localhost:5173").TrimEnd('/');
             var resetUrl = $"{frontendBaseUrl}/reset-password?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}";
-           try
-{
-   try
-{
-    try
-{
-   try
-{
-    await _emailService.SendPasswordResetAsync(email, resetUrl);
-}
-catch (Exception ex)
-{
-    return BadRequest(ex.ToString());
-}
-}
-catch (Exception ex)
-{
-    return BadRequest(ex.ToString());
-}
-}
-catch (Exception ex)
-{
-    return BadRequest(ex.Message);
-}
-}
-catch (Exception ex)
-{
-    return BadRequest(ex.ToString());
-}
+            try
+            {
+                await _emailService.SendPasswordResetAsync(email, resetUrl, HttpContext.RequestAborted);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception, "Could not send a customer password reset email.");
+                return Problem(
+                    "The password reset email could not be sent. Please try again later.",
+                    statusCode: StatusCodes.Status502BadGateway);
+            }
         }
 
         return Ok(new { message = "If the email is registered, a password reset link has been sent." });
