@@ -39,8 +39,8 @@ Console.WriteLine("Connecting SMTP...");
 
 await client.ConnectAsync(
     "smtp.gmail.com",
-    465,
-    SecureSocketOptions.SslOnConnect);
+    587,
+    SecureSocketOptions.StartTls);
 
 Console.WriteLine("Connected SMTP");
 
