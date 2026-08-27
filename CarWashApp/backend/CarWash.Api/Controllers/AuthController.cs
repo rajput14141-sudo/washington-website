@@ -107,7 +107,14 @@ public class AuthController : ControllerBase
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var frontendBaseUrl = (_configuration["Frontend:BaseUrl"] ?? "http://localhost:5173").TrimEnd('/');
             var resetUrl = $"{frontendBaseUrl}/reset-password?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}";
-            await _emailService.SendPasswordResetAsync(email, resetUrl);
+           try
+{
+    await _emailService.SendPasswordResetAsync(email, resetUrl);
+}
+catch (Exception ex)
+{
+    return BadRequest(ex.ToString());
+}
         }
 
         return Ok(new { message = "If the email is registered, a password reset link has been sent." });
