@@ -33,18 +33,35 @@ public class SmtpEmailService : IEmailService
             Text = $"Use this link to reset your password:\n\n{resetUrl}\n\nIf you did not request this, you can ignore this email."
         };
 
-        var port = _configuration.GetValue("Email:Port", 587);
-        var useSsl = _configuration.GetValue("Email:UseSsl", false);
         using var client = new SmtpClient();
-       await client.ConnectAsync(
-    _configuration["Email:Host"],
+
+Console.WriteLine("Connecting SMTP...");
+
+await client.ConnectAsync(
+    "smtp.gmail.com",
     587,
     SecureSocketOptions.StartTls);
-        var username = _configuration["Email:Username"];
-        if (!string.IsNullOrWhiteSpace(username))
-            await client.AuthenticateAsync(username, _configuration["Email:Password"]);
 
-        await client.SendAsync(message);
-        await client.DisconnectAsync(true);
+Console.WriteLine("Connected SMTP");
+
+var username = _configuration["Email:Username"];
+
+Console.WriteLine("Authenticating SMTP...");
+
+if (!string.IsNullOrWhiteSpace(username))
+{
+    await client.AuthenticateAsync(
+        username,
+        _configuration["Email:Password"]);
+}
+
+Console.WriteLine("Authenticated SMTP");
+
+await client.SendAsync(message);
+
+Console.WriteLine("Email sent");
+
+await client.DisconnectAsync(true);
+       
     }
 }
