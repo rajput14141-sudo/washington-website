@@ -113,7 +113,14 @@ public class AuthController : ControllerBase
 {
     try
 {
+   try
+{
     await _emailService.SendPasswordResetAsync(email, resetUrl);
+}
+catch (Exception ex)
+{
+    return BadRequest(ex.ToString());
+}
 }
 catch (Exception ex)
 {
