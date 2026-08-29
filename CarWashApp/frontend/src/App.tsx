@@ -12,6 +12,7 @@ import Register from './pages/Register'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import AdminAuth from './pages/AdminAuth'
+import Legal from './pages/Legal'
 import { useAuth } from './context/AuthContext'
 
 function RequireAuth({ children, adminOnly = false }: { children: JSX.Element, adminOnly?: boolean }) {
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/admin-access" element={<AdminAuth />} />
+          <Route path="/policies/:policy" element={<Legal />} />
           <Route path="/book/:serviceId" element={<RequireAuth><Booking /></RequireAuth>} />
           <Route path="/booking-success" element={<RequireAuth><BookingSuccess /></RequireAuth>} />
           <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />

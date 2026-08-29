@@ -56,7 +56,7 @@ localStorage.setItem(
     <>
       <section className="overflow-hidden bg-gradient-to-br from-teal-50 via-white to-amber-50">
         <div className="page-shell grid items-center gap-8 py-8 lg:grid-cols-[1.25fr_.75fr] lg:py-12">
-          <div className="flex self-stretch flex-col">
+          <div>
             <p className="mb-5 text-sm font-black uppercase tracking-[0.2em] text-teal-700">Doorstep car care</p>
             <h1 className="max-w-4xl text-5xl font-black leading-[1.02] text-slate-950 sm:text-7xl lg:text-8xl">
               A spotless car, without leaving home.
@@ -68,25 +68,20 @@ localStorage.setItem(
               <Link to="/services" className="primary-button">Book a Wash</Link>
               <Link to="/services" className="secondary-button">View Pricing</Link>
             </div>
-            <div className="my-auto grid gap-3 py-10 sm:grid-cols-3">
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
               {[
                 [CalendarCheck, 'Easy booking', 'Choose a convenient time'],
                 [MapPin, 'At your doorstep', 'No driving or waiting'],
                 [IndianRupee, 'Clear pricing', 'Know the cost upfront'],
               ].map(([Icon, title, text]) => (
-                <div key={String(title)} className="group relative flex min-h-44 flex-col overflow-hidden rounded-3xl border border-teal-100 bg-gradient-to-br from-white via-white to-teal-50 p-5 shadow-lg shadow-teal-900/5 transition duration-300 hover:-translate-y-1 hover:border-teal-300 hover:shadow-xl hover:shadow-teal-900/10">
-                  <span className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-teal-100/60 transition-transform duration-300 group-hover:scale-125" aria-hidden="true" />
-                  <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-700 text-white shadow-md shadow-teal-800/20">
-                    <Icon size={24} aria-hidden="true" />
-                  </div>
-                  <div className="relative mt-auto pt-5">
-                    <p className="text-lg font-extrabold text-slate-950">{String(title)}</p>
-                    <p className="mt-1 text-sm font-medium leading-5 text-slate-600">{String(text)}</p>
-                  </div>
+                <div key={String(title)} className="rounded-2xl border border-teal-100 bg-white/80 p-3 shadow-sm backdrop-blur-sm">
+                  <Icon className="text-teal-700" size={20} aria-hidden="true" />
+                  <p className="mt-2 font-extrabold text-slate-950">{String(title)}</p>
+                  <p className="mt-1 text-sm leading-5 text-slate-600">{String(text)}</p>
                 </div>
               ))}
             </div>
-            <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm font-bold text-slate-700">
+            <div className="mt-6 flex flex-wrap gap-x-8 gap-y-3 text-sm font-bold text-slate-700">
               <span>✓ Verified service</span>
               <span>✓ Upfront pricing</span>
               <span>✓ WhatsApp confirmation</span>
@@ -101,11 +96,11 @@ localStorage.setItem(
                 className="h-full w-full object-contain"
               />
             </div>
-            <div className="p-7 pt-5 sm:p-9 sm:pt-6">
-              <h2 className="text-3xl font-extrabold text-white">What you get</h2>
-              <div className="mt-6 space-y-3">
+            <div className="p-5">
+              <h2 className="text-2xl font-extrabold text-white">What you get</h2>
+              <div className="mt-4 space-y-2">
                 {['Trained wash professionals', 'Doorstep service at your address', 'Eco-friendly cleaning process', 'Instant booking confirmation'].map(item => (
-                  <div key={item} className="rounded-2xl border border-white/15 bg-white/10 px-5 py-4 font-semibold text-white">
+                  <div key={item} className="rounded-xl border border-white/15 bg-white/10 px-4 py-3 font-semibold text-white">
                     {item}
                   </div>
                 ))}
