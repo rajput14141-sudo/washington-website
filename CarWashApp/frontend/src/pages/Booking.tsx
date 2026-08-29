@@ -143,7 +143,6 @@ export default function Booking() {
           <input className="form-control" type="tel" value={phoneNumber}
             onChange={e => setPhoneNumber(sanitizeIndianMobile(e.target.value))}
             minLength={10} maxLength={10} pattern={INDIAN_MOBILE_PATTERN}
-            placeholder="10-digit number starting with 7, 8, or 9"
             title="Enter a 10-digit mobile number starting with 7, 8, or 9"
             inputMode="numeric" autoComplete="tel" required />
         </div>

@@ -36,7 +36,7 @@ export default function Login() {
           </p>
         )}
         <form onSubmit={handleSubmit} className="space-y-5">
-          <input className="form-control" type="tel" placeholder="10-digit mobile number starting with 7, 8, or 9"
+          <input className="form-control" type="tel"
             value={phoneNumber} onChange={event => setPhoneNumber(sanitizeIndianMobile(event.target.value))}
             inputMode="numeric" pattern={INDIAN_MOBILE_PATTERN} minLength={10} maxLength={10}
             title="Enter a 10-digit mobile number starting with 7, 8, or 9"

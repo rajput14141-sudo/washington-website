@@ -61,7 +61,7 @@ export default function Register() {
         </div>
         <div>
           <label className="form-label" htmlFor="customer-mobile">Mobile Number *</label>
-          <input id="customer-mobile" className="form-control" type="tel" placeholder="10-digit number starting with 7, 8, or 9"
+          <input id="customer-mobile" className="form-control" type="tel"
             value={phoneNumber} onChange={e => setPhoneNumber(sanitizeIndianMobile(e.target.value))}
             inputMode="numeric" pattern={INDIAN_MOBILE_PATTERN} minLength={10} maxLength={10}
             title="Enter a 10-digit mobile number starting with 7, 8, or 9"

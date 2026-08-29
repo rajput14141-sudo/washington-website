@@ -50,7 +50,7 @@ export default function PublicBooking() {
             <legend className="mb-5 text-xl font-extrabold text-slate-950">Contact details</legend>
             <div className="grid gap-5 sm:grid-cols-2">
               <label><span className="form-label">Full name *</span><input className="form-control" value={customerName} onChange={event => setCustomerName(event.target.value)} required /></label>
-              <label><span className="form-label">Phone number *</span><input className="form-control" type="tel" value={phone} onChange={event => setPhone(sanitizeIndianMobile(event.target.value))} inputMode="numeric" pattern={INDIAN_MOBILE_PATTERN} minLength={10} maxLength={10} placeholder="Starts with 7, 8, or 9" title="Enter a 10-digit mobile number starting with 7, 8, or 9" autoComplete="tel" required /></label>
+              <label><span className="form-label">Phone number *</span><input className="form-control" type="tel" value={phone} onChange={event => setPhone(sanitizeIndianMobile(event.target.value))} inputMode="numeric" pattern={INDIAN_MOBILE_PATTERN} minLength={10} maxLength={10} title="Enter a 10-digit mobile number starting with 7, 8, or 9" autoComplete="tel" required /></label>
               <label className="sm:col-span-2"><span className="form-label">Email *</span><input className="form-control" type="email" value={email} onChange={event => setEmail(event.target.value)} required /></label>
               <label className="sm:col-span-2"><span className="form-label">Address *</span><textarea className="form-control min-h-24" value={address} onChange={event => setAddress(event.target.value)} maxLength={300} required /></label>
             </div>
