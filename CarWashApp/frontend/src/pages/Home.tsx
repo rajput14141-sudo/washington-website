@@ -58,7 +58,7 @@ localStorage.setItem(
         <div className="page-shell grid items-center gap-8 py-8 lg:grid-cols-[1.25fr_.75fr] lg:py-12">
           <div>
             <p className="mb-5 text-sm font-black uppercase tracking-[0.2em] text-teal-700">Doorstep car care</p>
-            <h1 className="max-w-4xl text-5xl font-black leading-[1.02] text-slate-950 sm:text-7xl lg:text-8xl">
+            <h1 className="max-w-4xl text-5xl font-black leading-[1.02] text-blue-700 sm:text-7xl lg:text-8xl">
               A spotless car, without leaving home.
             </h1>
             <p className="mt-7 max-w-2xl text-lg font-medium leading-8 text-slate-700 sm:text-xl">
