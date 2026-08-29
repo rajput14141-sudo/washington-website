@@ -24,15 +24,12 @@ const washGallery = [
 
 export default function Home() {
   const [siteRating, setSiteRating] = useState(4.9)
-  const [peopleCount, setPeopleCount] = useState(356)
 
   useEffect(() => {
-    const applySettings = (settings: { rating?: unknown; peopleCount?: unknown }) => {
+    const applySettings = (settings: { rating?: unknown }) => {
       const rating = Number(settings.rating)
-      const count = Number(settings.peopleCount)
 
       if (Number.isFinite(rating)) setSiteRating(rating)
-      if (Number.isFinite(count)) setPeopleCount(count)
     }
 
     const cached = localStorage.getItem('site-settings-cache')
@@ -205,7 +202,7 @@ export default function Home() {
               <p className="text-xs font-bold text-slate-500">Local coverage</p>
             </div>
             <div>
-              <p className="text-2xl font-black text-slate-950">{peopleCount.toLocaleString('en-IN')}</p>
+              <p className="text-2xl font-black text-slate-950">487</p>
               <p className="text-xs font-bold text-slate-500">Customer reviews</p>
             </div>
           </div>
