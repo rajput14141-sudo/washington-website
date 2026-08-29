@@ -23,13 +23,18 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur">
       <nav className="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-2 px-5 sm:gap-4 sm:px-8 lg:px-12">
-        <Link to="/" onClick={() => setMobileOpen(false)} className="flex min-w-0 items-center gap-2 text-base font-black tracking-tight text-teal-900 sm:gap-3 sm:text-2xl">
+        <Link to="/" onClick={() => setMobileOpen(false)} className="flex min-w-0 items-center gap-2 sm:gap-3">
           <img
             src={mrWashingtonLogo}
             alt="Mr. Washington Premium Car Care"
             className="h-11 w-11 shrink-0 rounded-full object-cover shadow-sm sm:h-14 sm:w-14"
           />
-          Mr.WashingTon
+          <span className="flex min-w-0 flex-col">
+            <span className="text-base font-black tracking-tight text-teal-900 sm:text-2xl">Mr.WashingTon</span>
+            <span className="mt-0.5 text-[9px] font-extrabold uppercase tracking-[0.16em] text-blue-500 sm:text-[10px]">
+              Care beyond the wash
+            </span>
+          </span>
         </Link>
         <div className="flex shrink-0 items-center gap-1 sm:hidden">
           <Link
