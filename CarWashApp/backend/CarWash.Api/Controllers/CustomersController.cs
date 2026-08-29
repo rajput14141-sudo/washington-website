@@ -32,4 +32,20 @@ public class CustomersController : ControllerBase
                 customer.Address))
             .ToList());
     }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(string id)
+    {
+        var customer = await _userManager.FindByIdAsync(id);
+        if (customer is null || !await _userManager.IsInRoleAsync(customer, "Customer"))
+            return NotFound();
+
+        var result = await _userManager.DeleteAsync(customer);
+        if (!result.Succeeded)
+            return Problem(
+                detail: string.Join(" ", result.Errors.Select(error => error.Description)),
+                statusCode: StatusCodes.Status500InternalServerError);
+
+        return NoContent();
+    }
 }

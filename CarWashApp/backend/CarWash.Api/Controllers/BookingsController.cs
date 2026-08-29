@@ -86,6 +86,19 @@ return Ok(new CreateBookingResultDto(booking.Id, service.Name));
         return NoContent();
     }
 
+    // Admin: permanently delete a booking
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var booking = await _db.Bookings.FindAsync(id);
+        if (booking is null) return NotFound();
+
+        _db.Bookings.Remove(booking);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
     private async Task<BookingDto> ToDto(int id)
     {
         var b = await _db.Bookings

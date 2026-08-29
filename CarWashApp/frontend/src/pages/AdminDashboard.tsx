@@ -71,6 +71,34 @@ export default function AdminDashboard() {
     }
   }
 
+  async function deleteBooking(booking: Booking) {
+    if (!window.confirm(`Permanently delete ${booking.customerName}'s booking?`)) return
+
+    setError('')
+    setMessage('')
+    try {
+      await api.delete(`/bookings/${booking.id}`)
+      setBookings(current => current.filter(item => item.id !== booking.id))
+      setMessage('Booking deleted successfully.')
+    } catch {
+      setError('Could not delete the booking. Please try again.')
+    }
+  }
+
+  async function deleteCustomer(customer: Customer) {
+    if (!window.confirm(`Permanently delete ${customer.fullName} and all of their bookings and vehicles?`)) return
+
+    setError('')
+    setMessage('')
+    try {
+      await api.delete(`/customers/${customer.id}`)
+      await Promise.all([loadCustomers(), loadBookings()])
+      setMessage('Customer and all related bookings deleted successfully.')
+    } catch {
+      setError('Could not delete the customer. Please try again.')
+    }
+  }
+
   async function publishService(event: FormEvent) {
     event.preventDefault()
     setError('')
@@ -203,6 +231,7 @@ export default function AdminDashboard() {
             <th className="p-3">Time</th>
             <th className="p-3">Expire date</th>
             <th className="p-3">Status</th>
+            <th className="p-3">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -223,6 +252,15 @@ export default function AdminDashboard() {
                   {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </td>
+              <td className="p-3">
+                <button
+                  type="button"
+                  onClick={() => deleteBooking(b)}
+                  className="rounded-lg border border-red-200 px-3 py-2 font-bold text-red-600 transition hover:bg-red-50 hover:text-red-800"
+                >
+                  Delete
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -238,6 +276,7 @@ export default function AdminDashboard() {
               <th className="p-3">Email</th>
               <th className="p-3">Phone number</th>
               <th className="p-3">Address</th>
+              <th className="p-3">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -247,6 +286,15 @@ export default function AdminDashboard() {
                 <td className="p-3">{customer.email}</td>
                 <td className="p-3">{customer.phoneNumber || 'Not provided'}</td>
                 <td className="p-3">{customer.address || 'Not provided'}</td>
+                <td className="p-3">
+                  <button
+                    type="button"
+                    onClick={() => deleteCustomer(customer)}
+                    className="rounded-lg border border-red-200 px-3 py-2 font-bold text-red-600 transition hover:bg-red-50 hover:text-red-800"
+                  >
+                    Delete
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

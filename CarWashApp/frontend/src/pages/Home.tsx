@@ -58,7 +58,7 @@ export default function Home() {
     <>
       <section className="overflow-hidden bg-gradient-to-br from-teal-50 via-white to-amber-50">
         <div className="page-shell grid items-center gap-8 py-8 lg:grid-cols-[1.25fr_.75fr] lg:py-12">
-          <div>
+          <div className="flex self-stretch flex-col">
             <p className="mb-5 text-sm font-black uppercase tracking-[0.2em] text-teal-700">Doorstep car care</p>
             <h1 className="max-w-4xl text-5xl font-black leading-[1.02] text-teal-900 sm:text-7xl lg:text-8xl">
               A spotless car, without leaving home.
@@ -68,7 +68,6 @@ export default function Home() {
             </p>
             <div className="mt-9 flex flex-wrap gap-4">
               <Link to="/services" className="primary-button">Book a Wash</Link>
-              <Link to="/services" className="secondary-button">View Pricing</Link>
             </div>
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
               {[
@@ -83,14 +82,14 @@ export default function Home() {
                 </div>
               ))}
             </div>
-            <div className="mt-6 flex flex-wrap gap-x-8 gap-y-3 text-sm font-bold text-slate-700">
+            <div className="mt-auto flex flex-wrap gap-x-8 gap-y-3 pt-6 text-sm font-bold text-slate-700">
               <span>✓ Verified service</span>
               <span>✓ Upfront pricing</span>
               <span>✓ WhatsApp confirmation</span>
             </div>
           </div>
 
-          <div className="relative overflow-hidden rounded-[28px] border border-white/15 bg-teal-950 text-white shadow-2xl shadow-teal-950/20">
+          <div className="relative w-full max-w-[300px] justify-self-center overflow-hidden rounded-[28px] border border-white/15 bg-teal-950 text-white shadow-2xl shadow-teal-950/20">
             <div className="relative aspect-[2/3] overflow-hidden bg-white">
               <img
                 src={mrWashingtonPoster}
@@ -103,11 +102,11 @@ export default function Home() {
                 className="h-full w-full object-contain"
               />
             </div>
-            <div className="p-5">
-              <h2 className="text-2xl font-extrabold text-white">What you get</h2>
-              <div className="mt-4 space-y-2">
+            <div className="p-4">
+              <h2 className="text-xl font-extrabold text-white">What you get</h2>
+              <div className="mt-3 space-y-2">
                 {['Trained wash professionals', 'Doorstep service at your address', 'Eco-friendly cleaning process', 'Instant booking confirmation'].map(item => (
-                  <div key={item} className="rounded-xl border border-white/15 bg-white/10 px-4 py-3 font-semibold text-white">
+                  <div key={item} className="rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-white">
                     {item}
                   </div>
                 ))}
