@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CalendarCheck, IndianRupee, MapPin, ShieldCheck, Sparkles } from 'lucide-react'
 import { api } from '../api/client'
-import mrWashingtonPoster from '../assets/mr-washington-car-wash.jpeg'
+import mrWashingtonPoster from '../assets/mr-washington-poster.webp'
 
 const washGallery = [
   {
@@ -91,12 +91,12 @@ export default function Home() {
           </div>
 
           <div className="relative overflow-hidden rounded-[28px] border border-white/15 bg-teal-950 text-white shadow-2xl shadow-teal-950/20">
-            <div className="relative aspect-[1054/1494] overflow-hidden bg-white">
+            <div className="relative aspect-[2/3] overflow-hidden bg-white">
               <img
                 src={mrWashingtonPoster}
                 alt="Mr. Washington doorstep car wash and detailing service"
-                width="1054"
-                height="1494"
+                width="1024"
+                height="1536"
                 loading="eager"
                 fetchPriority="high"
                 decoding="async"
