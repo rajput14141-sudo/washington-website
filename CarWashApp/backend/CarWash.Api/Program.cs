@@ -116,10 +116,15 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("Frontend");
+
 if (app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
+
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapGet("/health", () => Results.Ok("Healthy"));
+
 app.MapControllers();
 
 app.Run();
