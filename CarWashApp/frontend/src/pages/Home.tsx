@@ -95,6 +95,11 @@ export default function Home() {
               <img
                 src={mrWashingtonPoster}
                 alt="Mr. Washington doorstep car wash and detailing service"
+                width="1054"
+                height="1494"
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
                 className="h-full w-full object-contain"
               />
             </div>
