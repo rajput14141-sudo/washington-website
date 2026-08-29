@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ShieldCheck, Sparkles } from 'lucide-react'
+import { CalendarCheck, IndianRupee, MapPin, ShieldCheck, Sparkles } from 'lucide-react'
 import { api } from '../api/client'
 import mrWashingtonPoster from '../assets/mr-washington-car-wash.jpeg'
 
@@ -68,7 +68,20 @@ localStorage.setItem(
               <Link to="/services" className="primary-button">Book a Wash</Link>
               <Link to="/services" className="secondary-button">View Pricing</Link>
             </div>
-            <div className="mt-auto flex flex-wrap gap-x-8 gap-y-3 pt-10 text-sm font-bold text-slate-700">
+            <div className="my-auto grid gap-3 py-10 sm:grid-cols-3">
+              {[
+                [CalendarCheck, 'Easy booking', 'Choose a convenient time'],
+                [MapPin, 'At your doorstep', 'No driving or waiting'],
+                [IndianRupee, 'Clear pricing', 'Know the cost upfront'],
+              ].map(([Icon, title, text]) => (
+                <div key={String(title)} className="rounded-2xl border border-teal-100 bg-white/80 p-4 shadow-sm backdrop-blur-sm">
+                  <Icon className="text-teal-700" size={22} aria-hidden="true" />
+                  <p className="mt-3 font-extrabold text-slate-950">{String(title)}</p>
+                  <p className="mt-1 text-sm leading-5 text-slate-600">{String(text)}</p>
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm font-bold text-slate-700">
               <span>✓ Verified service</span>
               <span>✓ Upfront pricing</span>
               <span>✓ WhatsApp confirmation</span>
