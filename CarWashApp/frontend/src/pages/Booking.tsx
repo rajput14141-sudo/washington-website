@@ -95,12 +95,26 @@ export default function Booking() {
           <input className="form-control" value={city}
             onChange={e => setCity(e.target.value)} maxLength={100} required />
         </div>
-        <div>
-          <label className="form-label">Pincode *</label>
-          <input className="form-control" value={pincode}
-            onChange={e => setPincode(e.target.value)} maxLength={20}
-            inputMode="numeric" autoComplete="postal-code" required />
-        </div>
+      <div>
+  <label className="form-label">Pincode *</label>
+
+  <input
+    className="form-control"
+    value={pincode}
+    onChange={(e) =>
+      setPincode(
+        e.target.value.replace(/\D/g, '').slice(0, 6)
+      )
+    }
+    maxLength={6}
+    minLength={6}
+    pattern="[0-9]{6}"
+    title="Enter exactly 6 digits"
+    inputMode="numeric"
+    autoComplete="postal-code"
+    required
+  />
+</div>
         <div>
           <label className="form-label">Phone Number *</label>
           <input className="form-control" type="tel" value={phoneNumber}

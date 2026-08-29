@@ -29,17 +29,12 @@ export default function Home() {
  useEffect(() => {
   const cached = localStorage.getItem("site-settings-cache");
 
-if (cached) {
-  const parsed = JSON.parse(cached);
+  if (cached) {
+    const data = JSON.parse(cached);
 
-  const oneHour = 60 * 60 * 1000;
-
-  if (Date.now() - parsed.timestamp < oneHour) {
-    setSiteRating(Number(parsed.data.rating));
-    setPeopleCount(Number(parsed.data.peopleCount));
+    setSiteRating(Number(data.rating));
+    setPeopleCount(Number(data.peopleCount));
     return;
-  }
-
   }
 
   api.get('/site-settings')
@@ -59,22 +54,8 @@ localStorage.setItem(
 
   return (
     <>
-      <div className="overflow-hidden border-y border-teal-900 bg-teal-950 py-3 text-white" aria-label="Care beyond the wash">
-        <div className="marquee-track flex w-max items-center whitespace-nowrap">
-          {[false, true].map(isDuplicate => (
-            <div key={String(isDuplicate)} className="flex items-center" aria-hidden={isDuplicate || undefined}>
-              {Array.from({ length: 4 }, (_, index) => (
-                <span key={index} className="flex items-center text-sm font-extrabold uppercase sm:text-base">
-                  <span className="px-8 sm:px-12">Care beyond the wash</span>
-                  <span className="text-amber-300" aria-hidden="true">◆</span>
-                </span>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
       <section className="overflow-hidden bg-gradient-to-br from-teal-50 via-white to-amber-50">
-        <div className="page-shell grid items-center gap-12 py-16 lg:grid-cols-[1.25fr_.75fr] lg:py-24">
+        <div className="page-shell grid items-center gap-8 py-8 lg:grid-cols-[1.25fr_.75fr] lg:py-12">
           <div>
             <p className="mb-5 text-sm font-black uppercase tracking-[0.2em] text-teal-700">Doorstep car care</p>
             <h1 className="max-w-4xl text-5xl font-black leading-[1.02] text-slate-950 sm:text-7xl lg:text-8xl">
