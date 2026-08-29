@@ -29,16 +29,33 @@ export default function Services() {
   const navigate = useNavigate()
   const [services, setServices] = useState<Service[]>([])
 
- useEffect(() => {
+const cached = localStorage.getItem("services-cache");
+
+if (cached) {
+  const parsed = JSON.parse(cached);
+
+  const oneHour = 60 * 60 * 1000;
+
+  if (Date.now() - parsed.timestamp < oneHour) {
+    setServices(parsed.data);
+    return;
+  }
+}
+
   api.get('/services')
     .then((res) => {
-      console.log('API Response:', res.data);
-
       const data = Array.isArray(res.data)
         ? res.data
         : res.data?.$values || [];
 
       setServices(data);
+localStorage.setItem(
+  "services-cache",
+  JSON.stringify({
+    data,
+    timestamp: Date.now()
+  })
+);
     })
     .catch((err) => {
       console.error('Services API Error:', err);

@@ -26,14 +26,36 @@ export default function Home() {
   const [siteRating, setSiteRating] = useState(4.8)
   const [peopleCount, setPeopleCount] = useState(0)
 
-  useEffect(() => {
-    api.get('/site-settings')
-      .then(response => {
-        setSiteRating(Number(response.data.rating))
-        setPeopleCount(Number(response.data.peopleCount))
-      })
-      .catch(() => undefined)
-  }, [])
+ useEffect(() => {
+  const cached = localStorage.getItem("site-settings-cache");
+
+if (cached) {
+  const parsed = JSON.parse(cached);
+
+  const oneHour = 60 * 60 * 1000;
+
+  if (Date.now() - parsed.timestamp < oneHour) {
+    setSiteRating(Number(parsed.data.rating));
+    setPeopleCount(Number(parsed.data.peopleCount));
+    return;
+  }
+
+  }
+
+  api.get('/site-settings')
+    .then(response => {
+      setSiteRating(Number(response.data.rating));
+      setPeopleCount(Number(response.data.peopleCount));
+localStorage.setItem(
+  "site-settings-cache",
+  JSON.stringify({
+    data: response.data,
+    timestamp: Date.now()
+  })
+);
+    })
+    .catch(() => undefined);
+}, []);
 
   return (
     <>
