@@ -74,10 +74,15 @@ localStorage.setItem(
                 [MapPin, 'At your doorstep', 'No driving or waiting'],
                 [IndianRupee, 'Clear pricing', 'Know the cost upfront'],
               ].map(([Icon, title, text]) => (
-                <div key={String(title)} className="rounded-2xl border border-teal-100 bg-white/80 p-4 shadow-sm backdrop-blur-sm">
-                  <Icon className="text-teal-700" size={22} aria-hidden="true" />
-                  <p className="mt-3 font-extrabold text-slate-950">{String(title)}</p>
-                  <p className="mt-1 text-sm leading-5 text-slate-600">{String(text)}</p>
+                <div key={String(title)} className="group relative flex min-h-44 flex-col overflow-hidden rounded-3xl border border-teal-100 bg-gradient-to-br from-white via-white to-teal-50 p-5 shadow-lg shadow-teal-900/5 transition duration-300 hover:-translate-y-1 hover:border-teal-300 hover:shadow-xl hover:shadow-teal-900/10">
+                  <span className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-teal-100/60 transition-transform duration-300 group-hover:scale-125" aria-hidden="true" />
+                  <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-700 text-white shadow-md shadow-teal-800/20">
+                    <Icon size={24} aria-hidden="true" />
+                  </div>
+                  <div className="relative mt-auto pt-5">
+                    <p className="text-lg font-extrabold text-slate-950">{String(title)}</p>
+                    <p className="mt-1 text-sm font-medium leading-5 text-slate-600">{String(text)}</p>
+                  </div>
                 </div>
               ))}
             </div>
