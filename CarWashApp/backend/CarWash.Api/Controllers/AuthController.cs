@@ -81,7 +81,7 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<AuthResponseDto>> Login(CustomerLoginDto dto)
     {
         var mobileNumber = dto.PhoneNumber.Trim();
-        if (mobileNumber.Length != 10 || mobileNumber.Any(character => !char.IsDigit(character)))
+        if (mobileNumber.Length != 10 || mobileNumber.Any(character => !char.IsDigit(character)) || mobileNumber[0] is not ('7' or '8' or '9'))
             return Unauthorized("Invalid mobile number or password");
 
         var user = await _userManager.Users

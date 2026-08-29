@@ -9,7 +9,7 @@ public record ServiceDto(int Id, string Name, string Description, decimal Price)
 
 public record CustomerRegistrationDto(
     [Required, MaxLength(255)] string Name,
-    [Required, MaxLength(30)] string Phone,
+    [Required, RegularExpression(@"^[789]\d{9}$", ErrorMessage = "Mobile number must contain 10 digits and start with 7, 8, or 9.")] string Phone,
     [Required, EmailAddress, MaxLength(255)] string Email,
     [Required, MaxLength(500)] string Address
 );
@@ -22,7 +22,7 @@ public record CreateBookingDto(
     [Required, MaxLength(300)] string Address,
     [Required, MaxLength(100)] string City,
     [Required, MaxLength(20)] string Pincode,
-    [Required, Phone, MaxLength(30)] string PhoneNumber
+    [Required, RegularExpression(@"^[789]\d{9}$", ErrorMessage = "Mobile number must contain 10 digits and start with 7, 8, or 9.")] string PhoneNumber
 );
 
 public record CreateBookingResultDto(int Id, string ServiceName);

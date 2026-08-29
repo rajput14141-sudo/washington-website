@@ -1,11 +1,17 @@
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
 import { api } from '../api/client'
+import { INDIAN_MOBILE_PATTERN, sanitizeIndianMobile } from '../utils/phone'
 
 interface BookingResult {
   id: number
   serviceName: string
+}
+
+interface ServiceLocation {
+  id: number
+  name: string
 }
 
 export default function Booking() {
@@ -16,9 +22,19 @@ export default function Booking() {
   const [notes, setNotes] = useState('')
   const [address, setAddress] = useState('')
   const [city, setCity] = useState('')
+  const [locations, setLocations] = useState<ServiceLocation[]>([])
   const [pincode, setPincode] = useState('')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    api.get<ServiceLocation[]>('/locations')
+      .then(response => {
+        setLocations(response.data)
+        if (response.data.length === 1) setCity(response.data[0].name)
+      })
+      .catch(() => setError('Could not load service locations. Please refresh the page.'))
+  }, [])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -91,9 +107,16 @@ export default function Booking() {
             onChange={e => setAddress(e.target.value)} maxLength={300} required />
         </div>
         <div>
-          <label className="form-label">City *</label>
-          <input className="form-control" value={city}
-            onChange={e => setCity(e.target.value)} maxLength={100} required />
+          <label className="form-label">Service Location *</label>
+          <select className="form-control" value={city} onChange={e => setCity(e.target.value)} required>
+            <option value="">Select a location</option>
+            {locations.map(location => (
+              <option key={location.id} value={location.name}>{location.name}</option>
+            ))}
+          </select>
+          {locations.length === 0 && (
+            <p className="mt-2 text-sm text-slate-500">No service locations are currently available.</p>
+          )}
         </div>
       <div>
   <label className="form-label">Pincode *</label>
@@ -118,9 +141,11 @@ export default function Booking() {
         <div>
           <label className="form-label">Phone Number *</label>
           <input className="form-control" type="tel" value={phoneNumber}
-            onChange={e => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
-            minLength={10} maxLength={10} pattern="[0-9]{10}"
-            title="Enter exactly 10 digits" inputMode="numeric" autoComplete="tel" required />
+            onChange={e => setPhoneNumber(sanitizeIndianMobile(e.target.value))}
+            minLength={10} maxLength={10} pattern={INDIAN_MOBILE_PATTERN}
+            placeholder="10-digit number starting with 7, 8, or 9"
+            title="Enter a 10-digit mobile number starting with 7, 8, or 9"
+            inputMode="numeric" autoComplete="tel" required />
         </div>
         <div>
           <label className="form-label">Date</label>

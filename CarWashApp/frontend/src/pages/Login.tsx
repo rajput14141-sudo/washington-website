@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { INDIAN_MOBILE_PATTERN, sanitizeIndianMobile } from '../utils/phone'
 
 export default function Login() {
   const { login } = useAuth()
@@ -35,9 +36,10 @@ export default function Login() {
           </p>
         )}
         <form onSubmit={handleSubmit} className="space-y-5">
-          <input className="form-control" type="tel" placeholder="Mobile number (User ID)"
-            value={phoneNumber} onChange={event => setPhoneNumber(event.target.value.replace(/\D/g, '').slice(0, 10))}
-            inputMode="numeric" pattern="[0-9]{10}" minLength={10} maxLength={10}
+          <input className="form-control" type="tel" placeholder="10-digit mobile number starting with 7, 8, or 9"
+            value={phoneNumber} onChange={event => setPhoneNumber(sanitizeIndianMobile(event.target.value))}
+            inputMode="numeric" pattern={INDIAN_MOBILE_PATTERN} minLength={10} maxLength={10}
+            title="Enter a 10-digit mobile number starting with 7, 8, or 9"
             autoComplete="username" required />
           <input className="form-control" type="password" placeholder="Password"
             value={password} onChange={event => setPassword(event.target.value)}

@@ -12,6 +12,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Service> Services => Set<Service>();
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<SiteSetting> SiteSettings => Set<SiteSetting>();
+    public DbSet<ServiceLocation> ServiceLocations => Set<ServiceLocation>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -24,6 +25,10 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         );
 
         builder.Entity<SiteSetting>().HasData(new SiteSetting { Id = 1, Rating = 4.8m });
+
+        builder.Entity<ServiceLocation>().HasData(
+            new ServiceLocation { Id = 1, Name = "Greater Noida", IsActive = true }
+        );
 
         builder.Entity<ApplicationUser>()
             .HasIndex(user => user.PhoneNumber)

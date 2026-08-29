@@ -26,6 +26,11 @@ public class BookingsController : ControllerBase
         var service = await _db.Services.FindAsync(dto.ServiceId);
         if (service is null || !service.IsActive) return BadRequest("Service not found.");
 
+        var locationName = dto.City.Trim();
+        var locationAvailable = await _db.ServiceLocations.AnyAsync(location =>
+            location.IsActive && location.Name.ToLower() == locationName.ToLower());
+        if (!locationAvailable) return BadRequest("Selected service location is not available.");
+
         var vehicle = await _db.Vehicles.FirstOrDefaultAsync(candidate =>
             candidate.Id == dto.VehicleId && candidate.UserId == CurrentUserId);
         if (vehicle is null) return BadRequest("Select a valid vehicle.");
@@ -38,7 +43,7 @@ public class BookingsController : ControllerBase
     ScheduledAt = DateTime.SpecifyKind(dto.ScheduledAt, DateTimeKind.Utc),
     Notes = dto.Notes,
     Address = dto.Address.Trim(),
-    City = dto.City.Trim(),
+    City = locationName,
     Pincode = dto.Pincode.Trim(),
     PhoneNumber = dto.PhoneNumber.Trim(),
     Status = BookingStatus.Pending

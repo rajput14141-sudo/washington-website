@@ -5,7 +5,7 @@ namespace CarWash.Api.DTOs;
 public record CustomerRegisterDto(
 	[Required, MaxLength(100)] string FullName,
 	[Required, EmailAddress, MaxLength(256)] string Email,
-	[Required, RegularExpression(@"^\d{10}$", ErrorMessage = "Mobile number must contain exactly 10 digits.")]
+	[Required, RegularExpression(@"^[789]\d{9}$", ErrorMessage = "Mobile number must contain 10 digits and start with 7, 8, or 9.")]
 	string PhoneNumber,
 	[Required, MaxLength(500)] string Address,
 	[Required, MinLength(8), MaxLength(100)] string Password,
@@ -20,7 +20,7 @@ public record RegisterDto(
 	string? Address = null);
 public record LoginDto(string Email, string Password);
 public record CustomerLoginDto(
-	[Required, RegularExpression(@"^\d{10}$", ErrorMessage = "Mobile number must contain exactly 10 digits.")]
+	[Required, RegularExpression(@"^[789]\d{9}$", ErrorMessage = "Mobile number must contain 10 digits and start with 7, 8, or 9.")]
 	string PhoneNumber,
 	[Required] string Password);
 public record ForgotPasswordDto(

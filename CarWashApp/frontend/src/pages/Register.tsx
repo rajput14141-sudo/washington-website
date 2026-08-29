@@ -2,6 +2,7 @@ import { FormEvent, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
+import { INDIAN_MOBILE_PATTERN, sanitizeIndianMobile } from '../utils/phone'
 
 export default function Register() {
   const { register } = useAuth()
@@ -60,9 +61,10 @@ export default function Register() {
         </div>
         <div>
           <label className="form-label" htmlFor="customer-mobile">Mobile Number *</label>
-          <input id="customer-mobile" className="form-control" type="tel" placeholder="Enter 10-digit mobile number"
-            value={phoneNumber} onChange={e => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
-            inputMode="numeric" pattern="[0-9]{10}" minLength={10} maxLength={10}
+          <input id="customer-mobile" className="form-control" type="tel" placeholder="10-digit number starting with 7, 8, or 9"
+            value={phoneNumber} onChange={e => setPhoneNumber(sanitizeIndianMobile(e.target.value))}
+            inputMode="numeric" pattern={INDIAN_MOBILE_PATTERN} minLength={10} maxLength={10}
+            title="Enter a 10-digit mobile number starting with 7, 8, or 9"
             autoComplete="tel" required />
         </div>
         <div>
