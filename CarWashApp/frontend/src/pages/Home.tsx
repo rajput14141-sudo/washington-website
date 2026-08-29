@@ -56,7 +56,7 @@ localStorage.setItem(
     <>
       <section className="overflow-hidden bg-gradient-to-br from-teal-50 via-white to-amber-50">
         <div className="page-shell grid items-center gap-8 py-8 lg:grid-cols-[1.25fr_.75fr] lg:py-12">
-          <div>
+          <div className="flex self-stretch flex-col">
             <p className="mb-5 text-sm font-black uppercase tracking-[0.2em] text-teal-700">Doorstep car care</p>
             <h1 className="max-w-4xl text-5xl font-black leading-[1.02] text-slate-950 sm:text-7xl lg:text-8xl">
               A spotless car, without leaving home.
@@ -68,7 +68,7 @@ localStorage.setItem(
               <Link to="/services" className="primary-button">Book a Wash</Link>
               <Link to="/services" className="secondary-button">View Pricing</Link>
             </div>
-            <div className="mt-10 flex flex-wrap gap-x-8 gap-y-3 text-sm font-bold text-slate-700">
+            <div className="mt-auto flex flex-wrap gap-x-8 gap-y-3 pt-10 text-sm font-bold text-slate-700">
               <span>✓ Verified service</span>
               <span>✓ Upfront pricing</span>
               <span>✓ WhatsApp confirmation</span>
