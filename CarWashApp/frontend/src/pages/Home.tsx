@@ -23,34 +23,39 @@ const washGallery = [
 ]
 
 export default function Home() {
-  const [siteRating, setSiteRating] = useState(4.8)
-  const [peopleCount, setPeopleCount] = useState(0)
+  const [siteRating, setSiteRating] = useState(4.9)
+  const [peopleCount, setPeopleCount] = useState(356)
 
- useEffect(() => {
-  const cached = localStorage.getItem("site-settings-cache");
+  useEffect(() => {
+    const applySettings = (settings: { rating?: unknown; peopleCount?: unknown }) => {
+      const rating = Number(settings.rating)
+      const count = Number(settings.peopleCount)
 
-  if (cached) {
-    const data = JSON.parse(cached);
+      if (Number.isFinite(rating)) setSiteRating(rating)
+      if (Number.isFinite(count)) setPeopleCount(count)
+    }
 
-    setSiteRating(Number(data.rating));
-    setPeopleCount(Number(data.peopleCount));
-    return;
-  }
+    const cached = localStorage.getItem('site-settings-cache')
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached)
+        applySettings(parsed.data ?? parsed)
+        return
+      } catch {
+        localStorage.removeItem('site-settings-cache')
+      }
+    }
 
-  api.get('/site-settings')
-    .then(response => {
-      setSiteRating(Number(response.data.rating));
-      setPeopleCount(Number(response.data.peopleCount));
-localStorage.setItem(
-  "site-settings-cache",
-  JSON.stringify({
-    data: response.data,
-    timestamp: Date.now()
-  })
-);
-    })
-    .catch(() => undefined);
-}, []);
+    api.get('/site-settings')
+      .then(response => {
+        applySettings(response.data)
+        localStorage.setItem(
+          'site-settings-cache',
+          JSON.stringify({ data: response.data, timestamp: Date.now() })
+        )
+      })
+      .catch(() => undefined)
+  }, [])
 
   return (
     <>
@@ -58,7 +63,7 @@ localStorage.setItem(
         <div className="page-shell grid items-center gap-8 py-8 lg:grid-cols-[1.25fr_.75fr] lg:py-12">
           <div>
             <p className="mb-5 text-sm font-black uppercase tracking-[0.2em] text-teal-700">Doorstep car care</p>
-            <h1 className="max-w-4xl text-5xl font-black leading-[1.02] text-blue-700 sm:text-7xl lg:text-8xl">
+            <h1 className="max-w-4xl text-5xl font-black leading-[1.02] text-teal-900 sm:text-7xl lg:text-8xl">
               A spotless car, without leaving home.
             </h1>
             <p className="mt-7 max-w-2xl text-lg font-medium leading-8 text-slate-700 sm:text-xl">
@@ -200,8 +205,8 @@ localStorage.setItem(
               <p className="text-xs font-bold text-slate-500">Local coverage</p>
             </div>
             <div>
-              <p className="text-2xl font-black text-slate-950">{peopleCount.toLocaleString('en-IN')}+</p>
-              <p className="text-xs font-bold text-slate-500">People served</p>
+              <p className="text-2xl font-black text-slate-950">{peopleCount.toLocaleString('en-IN')}</p>
+              <p className="text-xs font-bold text-slate-500">Customer reviews</p>
             </div>
           </div>
         </div>
