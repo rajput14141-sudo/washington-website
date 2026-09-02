@@ -35,7 +35,7 @@ public class SmtpEmailService : IEmailService
         var message = new MimeMessage();
         message.From.Add(new MailboxAddress(
             _configuration["Email:FromName"] ?? "Mr.WashingTon Car Wash",
-            fromAddress));
+            fromAddress));    
         message.To.Add(MailboxAddress.Parse(recipientEmail));
         message.Subject = "Reset your Mr.WashingTon password";
         message.Body = new TextPart("plain")
@@ -49,7 +49,7 @@ public class SmtpEmailService : IEmailService
             : SecureSocketOptions.StartTls;
 
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeout.CancelAfter(TimeSpan.FromSeconds(30));
+        timeout.CancelAfter(TimeSpan.FromSeconds(90));
 
         using var client = new SmtpClient { Timeout = 30000 };
         await client.ConnectAsync(host, port, socketOptions, timeout.Token);
