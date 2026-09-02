@@ -29,11 +29,6 @@ interface Customer {
   address: string
 }
 
-interface ServiceLocation {
-  id: number
-  name: string
-}
-
 const STATUSES = ['Pending', 'Confirmed', 'InProgress', 'Completed', 'Cancelled']
 
 export default function AdminDashboard() {
@@ -46,9 +41,6 @@ export default function AdminDashboard() {
   const [error, setError] = useState('')
   const [customers, setCustomers] = useState<Customer[]>([])
   const [editingService, setEditingService] = useState<Service | null>(null)
-  const [locations, setLocations] = useState<ServiceLocation[]>([])
-  const [locationName, setLocationName] = useState('')
-  const [editingLocation, setEditingLocation] = useState<ServiceLocation | null>(null)
 
   async function loadBookings() {
     const response = await api.get('/bookings')
@@ -65,13 +57,8 @@ export default function AdminDashboard() {
     setCustomers(response.data)
   }
 
-  async function loadLocations() {
-    const response = await api.get('/locations')
-    setLocations(response.data)
-  }
-
   useEffect(() => {
-    Promise.all([loadBookings(), loadServices(), loadCustomers(), loadLocations()])
+    Promise.all([loadBookings(), loadServices(), loadCustomers()])
       .catch(() => setError('Your admin session has expired. Please log in again.'))
   }, [])
 
@@ -81,34 +68,6 @@ export default function AdminDashboard() {
       await loadBookings()
     } catch {
       setError('Could not update the booking status. Please log in again if your session expired.')
-    }
-  }
-
-  async function deleteBooking(booking: Booking) {
-    if (!window.confirm(`Permanently delete ${booking.customerName}'s booking?`)) return
-
-    setError('')
-    setMessage('')
-    try {
-      await api.delete(`/bookings/${booking.id}`)
-      setBookings(current => current.filter(item => item.id !== booking.id))
-      setMessage('Booking deleted successfully.')
-    } catch {
-      setError('Could not delete the booking. Please try again.')
-    }
-  }
-
-  async function deleteCustomer(customer: Customer) {
-    if (!window.confirm(`Permanently delete ${customer.fullName} and all of their bookings and vehicles?`)) return
-
-    setError('')
-    setMessage('')
-    try {
-      await api.delete(`/customers/${customer.id}`)
-      await Promise.all([loadCustomers(), loadBookings()])
-      setMessage('Customer and all related bookings deleted successfully.')
-    } catch {
-      setError('Could not delete the customer. Please try again.')
     }
   }
 
@@ -165,53 +124,6 @@ export default function AdminDashboard() {
       await loadServices()
     } catch {
       setError('Could not remove the service. Please log in again if your session expired.')
-    }
-  }
-
-  async function saveLocation(event: FormEvent) {
-    event.preventDefault()
-    setError('')
-    setMessage('')
-
-    try {
-      if (editingLocation)
-        await api.put(`/locations/${editingLocation.id}`, { name: locationName })
-      else
-        await api.post('/locations', { name: locationName })
-
-      setLocationName('')
-      setEditingLocation(null)
-      setMessage(editingLocation ? 'Location updated successfully.' : 'Location added successfully.')
-      await loadLocations()
-    } catch {
-      setError('Could not save the location. Make sure the name is not already in use.')
-    }
-  }
-
-  function startEditingLocation(location: ServiceLocation) {
-    setEditingLocation(location)
-    setLocationName(location.name)
-    setError('')
-    setMessage('')
-  }
-
-  function cancelEditingLocation() {
-    setEditingLocation(null)
-    setLocationName('')
-  }
-
-  async function deactivateLocation(location: ServiceLocation) {
-    if (!window.confirm(`Remove ${location.name} from the booking dropdown?`)) return
-
-    setError('')
-    setMessage('')
-    try {
-      await api.delete(`/locations/${location.id}`)
-      if (editingLocation?.id === location.id) cancelEditingLocation()
-      setMessage('Location removed successfully.')
-      await loadLocations()
-    } catch {
-      setError('Could not remove the location. Please try again.')
     }
   }
 
@@ -279,50 +191,6 @@ export default function AdminDashboard() {
         </section>
       </section>
 
-      <section className="mb-10 grid gap-6 lg:grid-cols-[minmax(320px,.8fr)_minmax(0,1fr)]">
-        <form onSubmit={saveLocation} className="surface-card p-6 sm:p-8">
-          <h2 className="text-2xl font-extrabold text-slate-950">
-            {editingLocation ? 'Edit service location' : 'Add service location'}
-          </h2>
-          <p className="mt-2 text-slate-600">Locations appear in the booking form dropdown.</p>
-          <label className="mt-6 block">
-            <span className="form-label">Location name</span>
-            <input
-              className="form-control"
-              value={locationName}
-              onChange={event => setLocationName(event.target.value)}
-              placeholder="e.g. Greater Noida"
-              maxLength={100}
-              required
-            />
-          </label>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button className="primary-button" type="submit">
-              {editingLocation ? 'Save Location' : 'Add Location'}
-            </button>
-            {editingLocation && (
-              <button className="secondary-button" type="button" onClick={cancelEditingLocation}>Cancel</button>
-            )}
-          </div>
-        </form>
-
-        <section className="surface-card p-6 sm:p-8">
-          <h2 className="text-2xl font-extrabold text-slate-950">Available locations</h2>
-          <div className="mt-5 grid gap-3">
-            {locations.map(location => (
-              <article key={location.id} className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 p-4">
-                <p className="font-extrabold text-slate-950">{location.name}</p>
-                <div className="flex shrink-0 gap-3 text-sm font-bold">
-                  <button type="button" onClick={() => startEditingLocation(location)} className="text-teal-700 hover:text-teal-900">Edit</button>
-                  <button type="button" onClick={() => deactivateLocation(location)} className="text-red-600 hover:text-red-800">Remove</button>
-                </div>
-              </article>
-            ))}
-            {locations.length === 0 && <p className="text-sm text-slate-500">No active service locations.</p>}
-          </div>
-        </section>
-      </section>
-
       <h2 className="mb-5 text-2xl font-extrabold text-slate-950">All bookings</h2>
       <div className="surface-card overflow-x-auto">
       <table className="w-full min-w-[900px] overflow-hidden">
@@ -335,7 +203,6 @@ export default function AdminDashboard() {
             <th className="p-3">Time</th>
             <th className="p-3">Expire date</th>
             <th className="p-3">Status</th>
-            <th className="p-3">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -356,15 +223,6 @@ export default function AdminDashboard() {
                   {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </td>
-              <td className="p-3">
-                <button
-                  type="button"
-                  onClick={() => deleteBooking(b)}
-                  className="rounded-lg border border-red-200 px-3 py-2 font-bold text-red-600 transition hover:bg-red-50 hover:text-red-800"
-                >
-                  Delete
-                </button>
-              </td>
             </tr>
           ))}
         </tbody>
@@ -380,7 +238,6 @@ export default function AdminDashboard() {
               <th className="p-3">Email</th>
               <th className="p-3">Phone number</th>
               <th className="p-3">Address</th>
-              <th className="p-3">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -390,15 +247,6 @@ export default function AdminDashboard() {
                 <td className="p-3">{customer.email}</td>
                 <td className="p-3">{customer.phoneNumber || 'Not provided'}</td>
                 <td className="p-3">{customer.address || 'Not provided'}</td>
-                <td className="p-3">
-                  <button
-                    type="button"
-                    onClick={() => deleteCustomer(customer)}
-                    className="rounded-lg border border-red-200 px-3 py-2 font-bold text-red-600 transition hover:bg-red-50 hover:text-red-800"
-                  >
-                    Delete
-                  </button>
-                </td>
               </tr>
             ))}
           </tbody>

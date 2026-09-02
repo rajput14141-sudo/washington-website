@@ -10,11 +10,18 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddUserSecrets(typeof(Program).Assembly, optional: true);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+// DB
+var sqliteConnectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is required.");
+var sqliteDataDirectory = builder.Configuration["Sqlite:DataDirectory"];
+if (!string.IsNullOrWhiteSpace(sqliteDataDirectory))
+{
+    Directory.CreateDirectory(sqliteDataDirectory);
+    sqliteConnectionString = $"Data Source={Path.Combine(sqliteDataDirectory, "carwash.db")}";
+}
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseSqlite(sqliteConnectionString));
 
 // Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -51,14 +58,13 @@ builder.Services.AddAuthentication(options =>
     });
 
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+builder.Services.AddHttpClient<IEmailService, BrevoEmailService>();
 
 // CORS for the React frontend
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
     ?? [builder.Configuration["Cors:AllowedOrigin"] ?? string.Empty];
 allowedOrigins = allowedOrigins
     .Where(origin => !string.IsNullOrWhiteSpace(origin))
-    .Select(origin => origin.Trim().TrimEnd('/'))
     .ToArray();
 
 if (allowedOrigins.Length == 0)
@@ -73,9 +79,11 @@ builder.Services.AddCors(options =>
                   if (allowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
                       return true;
 
-           return Uri.TryCreate(origin, UriKind.Absolute, out var uri)
-    && uri.Scheme == Uri.UriSchemeHttps
-    && uri.Host.EndsWith(".vercel.app", StringComparison.OrdinalIgnoreCase); })
+                  return Uri.TryCreate(origin, UriKind.Absolute, out var uri)
+                      && uri.Scheme == Uri.UriSchemeHttps
+                      && uri.Host.StartsWith("washington-website-", StringComparison.OrdinalIgnoreCase)
+                      && uri.Host.EndsWith("-anshu-carwash.vercel.app", StringComparison.OrdinalIgnoreCase);
+              })
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -115,16 +123,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseHttpsRedirection();
 app.UseCors("Frontend");
-
-if (app.Environment.IsDevelopment())
-    app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.MapGet("/health", () => Results.Ok("Healthy"));
-
 app.MapControllers();
 
 app.Run();

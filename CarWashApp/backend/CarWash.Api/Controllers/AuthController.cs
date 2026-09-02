@@ -3,7 +3,6 @@ using CarWash.Api.Models;
 using CarWash.Api.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace CarWash.Api.Controllers;
 
@@ -13,53 +12,41 @@ public class AuthController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ITokenService _tokenService;
-    private readonly IEmailService _emailService;
-    private readonly IConfiguration _configuration;
-    private readonly ILogger<AuthController> _logger;
 
     public AuthController(
         UserManager<ApplicationUser> userManager,
-        ITokenService tokenService,
-        IEmailService emailService,
-        IConfiguration configuration,
-        ILogger<AuthController> logger)
+        ITokenService tokenService)
     {
         _userManager = userManager;
         _tokenService = tokenService;
-        _emailService = emailService;
-        _configuration = configuration;
-        _logger = logger;
     }
 
     [HttpPost("register")]
-    public async Task<ActionResult<AuthResponseDto>> Register(CustomerRegisterDto dto)
+    public async Task<ActionResult<AuthResponseDto>> Register(RegisterDto dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.FullName))
-            return BadRequest(new[] { "Name is required." });
+        var mobileNumber = dto.PhoneNumber?.Trim() ?? string.Empty;
+        if (mobileNumber.Length != 10 || mobileNumber.Any(character => !char.IsDigit(character)))
+            return BadRequest(new[] { "Mobile number must contain exactly 10 digits." });
 
         if (string.IsNullOrWhiteSpace(dto.Address))
             return BadRequest(new[] { "Address is required." });
 
-        if (dto.Password != dto.ConfirmPassword)
-            return BadRequest(new[] { "Password and confirm password do not match." });
-
-        var mobileNumber = dto.PhoneNumber.Trim();
         var email = dto.Email.Trim().ToLowerInvariant();
         if (await _userManager.FindByEmailAsync(email) is not null)
             return BadRequest(new[] { "An account with this email already exists." });
 
-        if (await _userManager.Users.AnyAsync(user => user.PhoneNumber == mobileNumber))
+        if (_userManager.Users.Any(user => user.PhoneNumber == mobileNumber))
             return BadRequest(new[] { "An account with this mobile number already exists." });
 
         var user = new ApplicationUser
         {
-            UserName = mobileNumber,
+            UserName = email,
             Email = email,
             FullName = dto.FullName.Trim(),
             PhoneNumber = mobileNumber,
             Address = dto.Address.Trim()
         };
-        var result = await _userManager.CreateAsync(user, dto.Password);
+        var result = await _userManager.CreateAsync(user, mobileNumber);
 
         if (!result.Succeeded)
             return BadRequest(result.Errors.Select(e => e.Description));
@@ -78,14 +65,9 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<AuthResponseDto>> Login(CustomerLoginDto dto)
+    public async Task<ActionResult<AuthResponseDto>> Login(LoginDto dto)
     {
-        var mobileNumber = dto.PhoneNumber.Trim();
-        if (mobileNumber.Length != 10 || mobileNumber.Any(character => !char.IsDigit(character)) || mobileNumber[0] is not ('7' or '8' or '9'))
-            return Unauthorized("Invalid mobile number or password");
-
-        var user = await _userManager.Users
-            .SingleOrDefaultAsync(candidate => candidate.PhoneNumber == mobileNumber);
+        var user = await _userManager.FindByEmailAsync(dto.Email.Trim());
         if (user is null) return Unauthorized("Invalid credentials");
 
         if (!await _userManager.CheckPasswordAsync(user, dto.Password))
@@ -97,58 +79,9 @@ public class AuthController : ControllerBase
         return Ok(new AuthResponseDto(token, user.Email!, user.FullName, roles));
     }
 
-    [HttpPost("forgot-password")]
-    public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
-    {
-        if (!_emailService.IsConfigured)
-            return Problem("Password reset email is not configured.", statusCode: StatusCodes.Status503ServiceUnavailable);
-
-        var email = dto.Email.Trim().ToLowerInvariant();
-        var user = await _userManager.FindByEmailAsync(email);
-        if (user is not null && await _userManager.IsInRoleAsync(user, "Customer"))
-        {
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var frontendBaseUrl = (_configuration["Frontend:BaseUrl"] ?? "http://localhost:5173").TrimEnd('/');
-            var resetUrl = $"{frontendBaseUrl}/reset-password?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}";
-            try
-            {
-                await _emailService.SendPasswordResetAsync(email, resetUrl, HttpContext.RequestAborted);
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError(exception, "Could not send a customer password reset email.");
-                return Problem(
-                    "The password reset email could not be sent. Please try again later.",
-                    statusCode: StatusCodes.Status502BadGateway);
-            }
-        }
-
-        return Ok(new { message = "If the email is registered, a password reset link has been sent." });
-    }
-
-    [HttpPost("reset-password")]
-    public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
-    {
-        if (dto.NewPassword != dto.ConfirmPassword)
-            return BadRequest(new[] { "Password and confirm password do not match." });
-
-        var user = await _userManager.FindByEmailAsync(dto.Email.Trim().ToLowerInvariant());
-        if (user is null || !await _userManager.IsInRoleAsync(user, "Customer"))
-            return BadRequest(new[] { "Invalid password reset request." });
-
-        var result = await _userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
-        if (!result.Succeeded)
-            return BadRequest(result.Errors.Select(error => error.Description));
-
-        return Ok(new { message = "Password reset successful. You can now log in with your mobile number." });
-    }
-
     [HttpPost("admin/register")]
     public async Task<ActionResult<AuthResponseDto>> RegisterAdmin(RegisterDto dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.Password))
-            return BadRequest(new[] { "Password is required." });
-
         var user = new ApplicationUser { UserName = dto.Email, Email = dto.Email, FullName = dto.FullName };
         var result = await _userManager.CreateAsync(user, dto.Password);
 
