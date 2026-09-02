@@ -23,18 +23,13 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur">
       <nav className="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-2 px-5 sm:gap-4 sm:px-8 lg:px-12">
-        <Link to="/" onClick={() => setMobileOpen(false)} className="flex min-w-0 items-center gap-2 sm:gap-3">
+        <Link to="/" onClick={() => setMobileOpen(false)} className="flex min-w-0 items-center gap-2 text-base font-black tracking-tight text-teal-900 sm:gap-3 sm:text-2xl">
           <img
             src={mrWashingtonLogo}
             alt="Mr. Washington Premium Car Care"
             className="h-11 w-11 shrink-0 rounded-full object-cover shadow-sm sm:h-14 sm:w-14"
           />
-          <span className="flex min-w-0 flex-col">
-            <span className="text-base font-black tracking-tight text-teal-900 sm:text-2xl">Mr.WashingTon</span>
-            <span className="mt-0.5 text-[9px] font-extrabold uppercase tracking-[0.16em] text-blue-500 sm:text-[10px]">
-              Care beyond the wash
-            </span>
-          </span>
+          Mr.WashingTon
         </Link>
         <div className="flex shrink-0 items-center gap-1 sm:hidden">
           <Link
@@ -58,8 +53,8 @@ export default function Navbar() {
         </div>
         <div className="hidden items-center gap-6 text-sm font-bold text-slate-700 sm:flex">
           <Link className="transition hover:text-teal-700" to="/services">Services</Link>
+          <a className="transition hover:text-teal-700" href="#contact">Contact Us</a>
           {user && !user.roles.includes('Admin') && <Link className="transition hover:text-teal-700" to="/dashboard">My Bookings</Link>}
-          <a className="transition hover:text-teal-700" href="/#contact">Contact Us</a>
           {!user && <Link className="transition hover:text-teal-700" to="/admin-access">Admin</Link>}
           {user?.roles.includes('Admin') && <Link className="hidden transition hover:text-teal-700 md:block" to="/admin">Admin</Link>}
         {user ? (
@@ -118,12 +113,12 @@ export default function Navbar() {
           )}
           <div className="grid gap-1 text-sm font-bold text-slate-700">
             <Link onClick={() => setMobileOpen(false)} to="/services" className="rounded-lg px-3 py-3 hover:bg-slate-50">Services</Link>
-            {user && !user.roles.includes('Admin') && (
-              <Link onClick={() => setMobileOpen(false)} to="/dashboard" className="rounded-lg px-3 py-3 hover:bg-slate-50">My Bookings</Link>
-            )}
-            <a onClick={() => setMobileOpen(false)} href="/#contact" className="rounded-lg px-3 py-3 hover:bg-slate-50">Contact Us</a>
+            <a onClick={() => setMobileOpen(false)} href="#contact" className="rounded-lg px-3 py-3 hover:bg-slate-50">Contact Us</a>
             {user ? (
               <>
+                {!user.roles.includes('Admin') && (
+                  <Link onClick={() => setMobileOpen(false)} to="/dashboard" className="rounded-lg px-3 py-3 hover:bg-slate-50">My Bookings</Link>
+                )}
                 {user.roles.includes('Admin') && (
                   <Link onClick={() => setMobileOpen(false)} to="/admin" className="rounded-lg px-3 py-3 hover:bg-slate-50">Admin Dashboard</Link>
                 )}
