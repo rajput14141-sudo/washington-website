@@ -32,8 +32,14 @@ public class BrevoEmailService : IEmailService
         var encodedResetUrl = WebUtility.HtmlEncode(resetUrl);
         var htmlContent = $$"""
             <div style="font-family:Arial,sans-serif;line-height:1.6;color:#1e293b">
-              <h2 style="color:#134e4a">Reset your password</h2>
-              <p>Copy and paste the following URL into your browser:</p>
+                            <h2>Reset your password</h2>
+                            <p>Click the button below to reset your password:</p>
+                            <p style="margin:24px 0">
+                                <a href="{{encodedResetUrl}}" style="background:#4f6bed;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:8px;display:inline-block;font-weight:700">
+                                    Reset Password
+                                </a>
+                            </p>
+                            <p>If the button doesn't work, copy and paste this URL:</p>
               <p style="overflow-wrap:anywhere">{{encodedResetUrl}}</p>
               <p>If you did not request a password reset, you can ignore this email.</p>
             </div>
