@@ -25,6 +25,8 @@ public class BrevoEmailService : IEmailService
         CancellationToken cancellationToken = default)
     {
         var apiKey = _configuration["Brevo:ApiKey"];
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new InvalidOperationException("Brevo email is not configured.");
 
         var body = new
         {

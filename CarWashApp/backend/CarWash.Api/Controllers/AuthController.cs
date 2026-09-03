@@ -12,13 +12,25 @@ public class AuthController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ITokenService _tokenService;
+    private readonly IEmailService _emailService;
+    private readonly IConfiguration _configuration;
 
     public AuthController(
         UserManager<ApplicationUser> userManager,
-        ITokenService tokenService)
+        ITokenService tokenService,
+        IEmailService emailService,
+        IConfiguration configuration)
     {
         _userManager = userManager;
         _tokenService = tokenService;
+        _emailService = emailService;
+        _configuration = configuration;
+    }
+
+    [HttpGet("test-route")]
+    public IActionResult TestRoute()
+    {
+        return Ok("Auth controller is working");
     }
 
     [HttpPost("register")]
@@ -79,9 +91,68 @@ public class AuthController : ControllerBase
         return Ok(new AuthResponseDto(token, user.Email!, user.FullName, roles));
     }
 
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword(
+        ForgotPasswordDto dto,
+        CancellationToken cancellationToken)
+    {
+        const string responseMessage = "If the email exists, a password reset link has been sent.";
+        var user = await _userManager.FindByEmailAsync(dto.Email.Trim());
+
+        // Always return the same response for unknown addresses to prevent account enumeration.
+        if (user?.Email is null)
+            return Ok(new { message = responseMessage });
+
+        if (!_emailService.IsConfigured)
+            return Problem(
+                "Password reset email is not configured.",
+                statusCode: StatusCodes.Status503ServiceUnavailable);
+
+        var frontendBaseUrl = _configuration["Frontend:BaseUrl"]?.TrimEnd('/');
+        if (!Uri.TryCreate(frontendBaseUrl, UriKind.Absolute, out var frontendUri) ||
+            (frontendUri.Scheme != Uri.UriSchemeHttp && frontendUri.Scheme != Uri.UriSchemeHttps))
+        {
+            return Problem(
+                "Frontend:BaseUrl is not configured.",
+                statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+
+        var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var resetUrl = $"{frontendBaseUrl}/reset-password" +
+            $"?email={Uri.EscapeDataString(user.Email)}" +
+            $"&token={Uri.EscapeDataString(resetToken)}";
+
+        await _emailService.SendPasswordResetAsync(
+            user.Email,
+            resetUrl,
+            cancellationToken);
+
+        return Ok(new { message = responseMessage });
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
+    {
+        if (!string.Equals(dto.NewPassword, dto.ConfirmPassword, StringComparison.Ordinal))
+            return BadRequest(new[] { "Password and confirmation password do not match." });
+
+        var user = await _userManager.FindByEmailAsync(dto.Email.Trim());
+        if (user is null)
+            return BadRequest(new[] { "The password reset link is invalid or expired." });
+
+        var result = await _userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
+        if (!result.Succeeded)
+            return BadRequest(result.Errors.Select(error => error.Description));
+
+        return Ok(new { message = "Your password has been reset successfully. You can now log in." });
+    }
+
     [HttpPost("admin/register")]
     public async Task<ActionResult<AuthResponseDto>> RegisterAdmin(RegisterDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.Password))
+            return BadRequest(new[] { "Password is required." });
+
         var user = new ApplicationUser { UserName = dto.Email, Email = dto.Email, FullName = dto.FullName };
         var result = await _userManager.CreateAsync(user, dto.Password);
 
