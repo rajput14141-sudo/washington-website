@@ -29,21 +29,15 @@ public class BrevoEmailService : IEmailService
         if (string.IsNullOrWhiteSpace(apiKey))
             throw new InvalidOperationException("Brevo email is not configured.");
 
-                var encodedResetUrl = WebUtility.HtmlEncode(resetUrl);
-                var htmlContent = $$"""
-                        <div style="font-family:Arial,sans-serif;line-height:1.6;color:#1e293b">
-                            <h2 style="color:#134e4a">Reset your password</h2>
-                            <p>Click the button below to reset your Mr.WashingTon password:</p>
-                            <p style="margin:24px 0">
-                                <a href="{{encodedResetUrl}}" style="background:#0f766e;color:#ffffff;padding:12px 20px;text-decoration:none;border-radius:9999px;display:inline-block;font-weight:700">
-                                    Reset Password
-                                </a>
-                            </p>
-                            <p>If the button does not work, copy and paste this link into your browser:</p>
-                            <p style="overflow-wrap:anywhere"><a href="{{encodedResetUrl}}">{{encodedResetUrl}}</a></p>
-                            <p>If you did not request a password reset, you can ignore this email.</p>
-                        </div>
-                        """;
+        var encodedResetUrl = WebUtility.HtmlEncode(resetUrl);
+        var htmlContent = $$"""
+            <div style="font-family:Arial,sans-serif;line-height:1.6;color:#1e293b">
+              <h2 style="color:#134e4a">Reset your password</h2>
+              <p>Copy and paste the following URL into your browser:</p>
+              <p style="overflow-wrap:anywhere">{{encodedResetUrl}}</p>
+              <p>If you did not request a password reset, you can ignore this email.</p>
+            </div>
+            """;
 
         var body = new
         {
@@ -58,7 +52,12 @@ public class BrevoEmailService : IEmailService
             },
             subject = "Reset your password",
             htmlContent,
-            textContent = $"Reset your password by opening this link:\n\n{resetUrl}\n\nIf you did not request this, you can ignore this email."
+            textContent = $"Reset your password by opening this link:\n\n{resetUrl}\n\nIf you did not request this, you can ignore this email.",
+            headers = new Dictionary<string, string>
+            {
+                ["X-Mailin-Track-Click"] = "0"
+            },
+            tags = new[] { "password-reset" }
         };
 
         using var request = new HttpRequestMessage(
