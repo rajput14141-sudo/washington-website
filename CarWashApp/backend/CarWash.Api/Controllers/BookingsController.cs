@@ -35,7 +35,7 @@ public class BookingsController : ControllerBase
             UserId = CurrentUserId,
             VehicleId = vehicle.Id,
             ServiceId = dto.ServiceId,
-            ScheduledAt = dto.ScheduledAt,
+            ScheduledAt = DateTime.SpecifyKind(dto.ScheduledAt, DateTimeKind.Utc),
             Notes = dto.Notes,
             Address = dto.Address.Trim(),
             City = dto.City.Trim(),
