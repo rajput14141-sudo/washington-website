@@ -108,6 +108,7 @@ public class AuthController : ControllerBase
                 "Password reset email is not configured.",
                 statusCode: StatusCodes.Status503ServiceUnavailable);
 
+        // Prefer the requesting frontend's origin, with the configured URL as a fallback.
         var frontendBaseUrl = string.Empty;
         var originHeader = Request.Headers.Origin.ToString();
         var refererHeader = Request.Headers.Referer.ToString();
