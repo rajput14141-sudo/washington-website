@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react'
+import { Trash2 } from 'lucide-react'
 import { api } from '../api/client'
 
 interface Service {
@@ -41,6 +42,8 @@ export default function AdminDashboard() {
   const [error, setError] = useState('')
   const [customers, setCustomers] = useState<Customer[]>([])
   const [editingService, setEditingService] = useState<Service | null>(null)
+  const [deletingBookingId, setDeletingBookingId] = useState<number | null>(null)
+  const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(null)
 
   async function loadBookings() {
     const response = await api.get('/bookings')
@@ -68,6 +71,38 @@ export default function AdminDashboard() {
       await loadBookings()
     } catch {
       setError('Could not update the booking status. Please log in again if your session expired.')
+    }
+  }
+
+  async function deleteBooking(booking: Booking) {
+    if (!window.confirm(`Delete ${booking.customerName}'s booking? This cannot be undone.`))
+      return
+
+    setDeletingBookingId(booking.id)
+    setError('')
+    try {
+      await api.delete(`/bookings/${booking.id}`)
+      setBookings(current => current.filter(item => item.id !== booking.id))
+    } catch {
+      setError('Could not delete the booking. Please log in again if your session expired.')
+    } finally {
+      setDeletingBookingId(null)
+    }
+  }
+
+  async function deleteCustomer(customer: Customer) {
+    if (!window.confirm(`Delete ${customer.fullName}'s account? This cannot be undone.`))
+      return
+
+    setDeletingCustomerId(customer.id)
+    setError('')
+    try {
+      await api.delete(`/customers/${customer.id}`)
+      await Promise.all([loadCustomers(), loadBookings()])
+    } catch {
+      setError('Could not delete the customer. Remove their bookings first, then try again.')
+    } finally {
+      setDeletingCustomerId(null)
     }
   }
 
@@ -203,6 +238,7 @@ export default function AdminDashboard() {
             <th className="p-3">Time</th>
             <th className="p-3">Expire date</th>
             <th className="p-3">Status</th>
+            <th className="p-3 text-center">Delete</th>
           </tr>
         </thead>
         <tbody>
@@ -223,6 +259,18 @@ export default function AdminDashboard() {
                   {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </td>
+              <td className="p-3 text-center">
+                <button
+                  type="button"
+                  className="inline-flex size-9 items-center justify-center rounded-lg text-red-600 hover:bg-red-50 hover:text-red-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={() => deleteBooking(b)}
+                  disabled={deletingBookingId === b.id}
+                  aria-label={`Delete ${b.customerName}'s booking`}
+                  title="Delete booking"
+                >
+                  <Trash2 size={18} aria-hidden="true" />
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -238,6 +286,7 @@ export default function AdminDashboard() {
               <th className="p-3">Email</th>
               <th className="p-3">Phone number</th>
               <th className="p-3">Address</th>
+              <th className="p-3 text-center">Delete</th>
             </tr>
           </thead>
           <tbody>
@@ -247,6 +296,18 @@ export default function AdminDashboard() {
                 <td className="p-3">{customer.email}</td>
                 <td className="p-3">{customer.phoneNumber || 'Not provided'}</td>
                 <td className="p-3">{customer.address || 'Not provided'}</td>
+                <td className="p-3 text-center">
+                  <button
+                    type="button"
+                    className="inline-flex size-9 items-center justify-center rounded-lg text-red-600 hover:bg-red-50 hover:text-red-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={() => deleteCustomer(customer)}
+                    disabled={deletingCustomerId === customer.id}
+                    aria-label={`Delete ${customer.fullName}`}
+                    title="Delete customer"
+                  >
+                    <Trash2 size={18} aria-hidden="true" />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

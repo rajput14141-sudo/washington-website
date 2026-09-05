@@ -86,6 +86,18 @@ public class BookingsController : ControllerBase
         return NoContent();
     }
 
+    [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var booking = await _db.Bookings.FindAsync(id);
+        if (booking is null) return NotFound();
+
+        _db.Bookings.Remove(booking);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
     private async Task<BookingDto> ToDto(int id)
     {
         var b = await _db.Bookings
