@@ -30,6 +30,11 @@ interface Customer {
   address: string
 }
 
+interface ServiceLocation {
+  id: number
+  name: string
+}
+
 const STATUSES = ['Pending', 'Confirmed', 'InProgress', 'Completed', 'Cancelled']
 
 export default function AdminDashboard() {
@@ -44,6 +49,10 @@ export default function AdminDashboard() {
   const [editingService, setEditingService] = useState<Service | null>(null)
   const [deletingBookingId, setDeletingBookingId] = useState<number | null>(null)
   const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(null)
+  const [locations, setLocations] = useState<ServiceLocation[]>([])
+  const [locationName, setLocationName] = useState('')
+  const [editingLocation, setEditingLocation] = useState<ServiceLocation | null>(null)
+  const [savingLocation, setSavingLocation] = useState(false)
 
   async function loadBookings() {
     const response = await api.get('/bookings')
@@ -60,8 +69,13 @@ export default function AdminDashboard() {
     setCustomers(response.data)
   }
 
+  async function loadLocations() {
+    const response = await api.get<ServiceLocation[]>('/locations')
+    setLocations(response.data)
+  }
+
   useEffect(() => {
-    Promise.all([loadBookings(), loadServices(), loadCustomers()])
+    Promise.all([loadBookings(), loadServices(), loadCustomers(), loadLocations()])
       .catch(() => setError('Your admin session has expired. Please log in again.'))
   }, [])
 
@@ -162,6 +176,53 @@ export default function AdminDashboard() {
     }
   }
 
+  async function saveLocation(event: FormEvent) {
+    event.preventDefault()
+    const trimmedName = locationName.trim()
+    if (!trimmedName) return
+
+    setSavingLocation(true)
+    setError('')
+    try {
+      if (editingLocation)
+        await api.put(`/locations/${editingLocation.id}`, { name: trimmedName })
+      else
+        await api.post('/locations', { name: trimmedName })
+
+      setLocationName('')
+      setEditingLocation(null)
+      await loadLocations()
+    } catch {
+      setError('Could not save the location. Make sure the location name is not already in the list.')
+    } finally {
+      setSavingLocation(false)
+    }
+  }
+
+  function startEditingLocation(location: ServiceLocation) {
+    setEditingLocation(location)
+    setLocationName(location.name)
+    setError('')
+  }
+
+  function cancelEditingLocation() {
+    setEditingLocation(null)
+    setLocationName('')
+  }
+
+  async function deleteLocation(location: ServiceLocation) {
+    if (!window.confirm(`Delete ${location.name} from service locations?`)) return
+
+    setError('')
+    try {
+      await api.delete(`/locations/${location.id}`)
+      if (editingLocation?.id === location.id) cancelEditingLocation()
+      await loadLocations()
+    } catch {
+      setError('Could not delete the location. Please log in again if your session expired.')
+    }
+  }
+
   return (
     <div className="page-shell">
       <p className="mb-3 text-sm font-black uppercase tracking-[0.2em] text-teal-700">Operations</p>
@@ -224,6 +285,53 @@ export default function AdminDashboard() {
             ))}
           </div>
         </section>
+      </section>
+
+      <section className="surface-card mb-10 p-6 sm:p-8">
+        <div className="grid gap-6 lg:grid-cols-[minmax(280px,.7fr)_minmax(0,1fr)]">
+          <form onSubmit={saveLocation}>
+            <h2 className="text-2xl font-extrabold text-slate-950">
+              {editingLocation ? 'Edit service location' : 'Add service location'}
+            </h2>
+            <label className="mt-5 block">
+              <span className="form-label">Location name</span>
+              <input
+                className="form-control"
+                value={locationName}
+                onChange={event => setLocationName(event.target.value)}
+                placeholder="Enter city or service area"
+                maxLength={100}
+                required
+              />
+            </label>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <button className="primary-button" disabled={savingLocation}>
+                {savingLocation ? 'Saving...' : editingLocation ? 'Save location' : 'Add location'}
+              </button>
+              {editingLocation && (
+                <button type="button" className="secondary-button" onClick={cancelEditingLocation}>Cancel</button>
+              )}
+            </div>
+          </form>
+
+          <div>
+            <h2 className="text-2xl font-extrabold text-slate-950">Current locations</h2>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {locations.map(location => (
+                <div key={location.id} className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 p-4">
+                  <span className="font-bold text-slate-900">{location.name}</span>
+                  <div className="flex shrink-0 items-center gap-3 text-sm font-bold">
+                    <button type="button" className="text-teal-700 hover:text-teal-900"
+                      onClick={() => startEditingLocation(location)}>Edit</button>
+                    <button type="button" className="text-red-600 hover:text-red-800"
+                      onClick={() => deleteLocation(location)}>Delete</button>
+                  </div>
+                </div>
+              ))}
+              {locations.length === 0 && <p className="text-sm text-slate-500">No service locations available.</p>}
+            </div>
+          </div>
+        </div>
       </section>
 
       <h2 className="mb-5 text-2xl font-extrabold text-slate-950">All bookings</h2>
