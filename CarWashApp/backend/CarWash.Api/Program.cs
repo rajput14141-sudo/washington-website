@@ -17,7 +17,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? throw new InvalidOperationException("Connection string missing.");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseSqlite(connectionString));
 
 // Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -119,7 +119,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+var httpsRedirectionEnabled = builder.Configuration.GetValue(
+    "HttpsRedirection:Enabled",
+    !app.Environment.IsDevelopment());
+if (httpsRedirectionEnabled)
+    app.UseHttpsRedirection();
+
 app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();

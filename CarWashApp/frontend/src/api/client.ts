@@ -5,7 +5,7 @@ const configuredApiUrl = import.meta.env.VITE_API_BASE_URL?.trim()
 export const api = axios.create({
   baseURL: configuredApiUrl || (
     import.meta.env.DEV
-      ? 'https://localhost:5001/api'
+      ? 'http://localhost:5000/api'
       : '/api'
   ),
   timeout: 15000,

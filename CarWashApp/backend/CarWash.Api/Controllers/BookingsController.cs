@@ -26,32 +26,27 @@ public class BookingsController : ControllerBase
         var service = await _db.Services.FindAsync(dto.ServiceId);
         if (service is null || !service.IsActive) return BadRequest("Service not found.");
 
-        var locationName = dto.City.Trim();
-        var locationAvailable = await _db.ServiceLocations.AnyAsync(location =>
-            location.IsActive && location.Name.ToLower() == locationName.ToLower());
-        if (!locationAvailable) return BadRequest("Selected service location is not available.");
-
         var vehicle = await _db.Vehicles.FirstOrDefaultAsync(candidate =>
             candidate.Id == dto.VehicleId && candidate.UserId == CurrentUserId);
         if (vehicle is null) return BadRequest("Select a valid vehicle.");
 
-      var booking = new Booking
-{
-    UserId = CurrentUserId,
-    VehicleId = vehicle.Id,
-    ServiceId = dto.ServiceId,
-    ScheduledAt = DateTime.SpecifyKind(dto.ScheduledAt, DateTimeKind.Utc),
-    Notes = dto.Notes,
-    Address = dto.Address.Trim(),
-    City = locationName,
-    Pincode = dto.Pincode.Trim(),
-    PhoneNumber = dto.PhoneNumber.Trim(),
-    Status = BookingStatus.Pending
-};
+        var booking = new Booking
+        {
+            UserId = CurrentUserId,
+            VehicleId = vehicle.Id,
+            ServiceId = dto.ServiceId,
+            ScheduledAt = dto.ScheduledAt,
+            Notes = dto.Notes,
+            Address = dto.Address.Trim(),
+            City = dto.City.Trim(),
+            Pincode = dto.Pincode.Trim(),
+            PhoneNumber = dto.PhoneNumber.Trim(),
+            Status = BookingStatus.Pending
+        };
         _db.Bookings.Add(booking);
-await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync();
 
-return Ok(new CreateBookingResultDto(booking.Id, service.Name));
+        return Ok(new CreateBookingResultDto(booking.Id, service.Name));
     }
 
     // Customer: view own bookings
@@ -87,19 +82,6 @@ return Ok(new CreateBookingResultDto(booking.Id, service.Name));
             return BadRequest("Invalid status.");
 
         booking.Status = status;
-        await _db.SaveChangesAsync();
-        return NoContent();
-    }
-
-    // Admin: permanently delete a booking
-    [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var booking = await _db.Bookings.FindAsync(id);
-        if (booking is null) return NotFound();
-
-        _db.Bookings.Remove(booking);
         await _db.SaveChangesAsync();
         return NoContent();
     }

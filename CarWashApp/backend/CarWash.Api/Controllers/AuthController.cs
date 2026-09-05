@@ -108,8 +108,29 @@ public class AuthController : ControllerBase
                 "Password reset email is not configured.",
                 statusCode: StatusCodes.Status503ServiceUnavailable);
 
-        var frontendBaseUrl = _configuration["Frontend:BaseUrl"]?.TrimEnd('/');
-        if (!Uri.TryCreate(frontendBaseUrl, UriKind.Absolute, out var frontendUri) ||
+        var frontendBaseUrl = string.Empty;
+        var originHeader = Request.Headers.Origin.ToString();
+        var refererHeader = Request.Headers.Referer.ToString();
+
+        if (!string.IsNullOrWhiteSpace(originHeader) &&
+            Uri.TryCreate(originHeader, UriKind.Absolute, out var originUri) &&
+            (originUri.Scheme == Uri.UriSchemeHttp || originUri.Scheme == Uri.UriSchemeHttps))
+        {
+            frontendBaseUrl = $"{originUri.Scheme}://{originUri.Authority}";
+        }
+        else if (!string.IsNullOrWhiteSpace(refererHeader) &&
+                 Uri.TryCreate(refererHeader, UriKind.Absolute, out var refererUri) &&
+                 (refererUri.Scheme == Uri.UriSchemeHttp || refererUri.Scheme == Uri.UriSchemeHttps))
+        {
+            frontendBaseUrl = $"{refererUri.Scheme}://{refererUri.Authority}";
+        }
+        else
+        {
+            frontendBaseUrl = _configuration["Frontend:BaseUrl"]?.TrimEnd('/') ?? string.Empty;
+        }
+
+        if (string.IsNullOrWhiteSpace(frontendBaseUrl) ||
+            !Uri.TryCreate(frontendBaseUrl, UriKind.Absolute, out var frontendUri) ||
             (frontendUri.Scheme != Uri.UriSchemeHttp && frontendUri.Scheme != Uri.UriSchemeHttps))
         {
             return Problem(
@@ -118,9 +139,10 @@ public class AuthController : ControllerBase
         }
 
         var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
-        var resetUrl = $"{frontendBaseUrl}/reset-password" +
-            $"?email={Uri.EscapeDataString(user.Email)}" +
-            $"&token={Uri.EscapeDataString(resetToken)}";
+        var cleanBaseUrl = frontendBaseUrl.Trim().TrimEnd('/');
+        var cleanEmail = Uri.EscapeDataString(user.Email.Trim());
+        var cleanToken = Uri.EscapeDataString(resetToken.Trim());
+        var resetUrl = $"{cleanBaseUrl}/reset-password?email={cleanEmail}&token={cleanToken}";
 
         await _emailService.SendPasswordResetAsync(
             user.Email,
